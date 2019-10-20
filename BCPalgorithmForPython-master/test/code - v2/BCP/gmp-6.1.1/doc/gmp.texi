@@ -1,0 +1,3522 @@
+\input texinfo    @c -*-texinfo-*-
+@c %**start of header
+@setfilename gmp.info
+@documentencoding ISO-8859-1
+@include version.texi
+@settitle GNU MP @value{VERSION}
+@synindex tp fn
+@iftex
+@afourpaper
+@end iftex
+@comment %**end of header
+
+@copying
+This manual describes how to install and use the GNU multiple precision
+arithmetic library, version @value{VERSION}.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being ``A GNU Manual'', and with the Back-Cover
+Texts being ``You have freedom to copy and modify this GNU Manual, like GNU
+software''.  A copy of the license is included in
+@ref{GNU Free Documentation License}.
+@end copying
+@c  Note the @ref above must be on one line, a line break in an @ref within
+@c  @copying will bomb in recent texinfo.tex (eg. 2004-04-07.08 which comes
+@c  with texinfo 4.7), with messages about missing @endcsname.
+
+
+@c  Texinfo version 4.2 or up will be needed to process this file.
+@c
+@c  The version number and edition number are taken from version.texi provided
+@c  by automake (note that it's regenerated only if you configure with
+@c  --enable-maintainer-mode).
+@c
+@c  Notes discussing the present version number of GMP in relation to previous
+@c  ones (for instance in the "Compatibility" section) must be updated at
+@c  manually though.
+@c
+@c  @cindex entries have been made for function categories and programming
+@c  topics.  The "mpn" section is not included in this, because a beginner
+@c  looking for "GCD" or something is only going to be confused by pointers to
+@c  low level routines.
+@c
+@c  @cindex entries are present for processors and systems when there's
+@c  particular notes concerning them, but not just for everything GMP
+@c  supports.
+@c
+@c  Index entries for files use @code rather than @file, @samp or @option,
+@c  since the latter come out with quotes in TeX, which are nice in the text
+@c  but don't look so good in index columns.
+@c
+@c  Tex:
+@c
+@c  A suitable texinfo.tex is supplied, a newer one should work equally well.
+@c
+@c  HTML:
+@c
+@c  Nothing special is done for links to external manuals, they just come out
+@c  in the usual makeinfo style, eg. "../libc/Locales.html".  If you have
+@c  local copies of such manuals then this is a good thing, if not then you
+@c  may want to search-and-replace to some online source.
+@c
+
+@dircategory GNU libraries
+@direntry
+* gmp: (gmp).                   GNU Multiple Precision Arithmetic Library.
+@end direntry
+
+@c  html <meta name="description" content="...">
+@documentdescription
+How to install and use the GNU multiple precision arithmetic library, version @value{VERSION}.
+@end documentdescription
+
+@c smallbook
+@finalout
+@setchapternewpage on
+
+@ifnottex
+@node Top, Copying, (dir), (dir)
+@top GNU MP
+@end ifnottex
+
+@iftex
+@titlepage
+@title GNU MP
+@subtitle The GNU Multiple Precision Arithmetic Library
+@subtitle Edition @value{EDITION}
+@subtitle @value{UPDATED}
+
+@author by Torbj@"orn Granlund and the GMP development team
+@c @email{tg@@gmplib.org}
+
+@c Include the Distribution inside the titlepage so
+@c that headings are turned off.
+
+@tex
+\global\parindent=0pt
+\global\parskip=8pt
+\global\baselineskip=13pt
+@end tex
+
+@page
+@vskip 0pt plus 1filll
+@end iftex
+
+@insertcopying
+@ifnottex
+@sp 1
+@end ifnottex
+
+@iftex
+@end titlepage
+@headings double
+@end iftex
+
+@c  Don't bother with contents for html, the menus seem adequate.
+@ifnothtml
+@contents
+@end ifnothtml
+
+@menu
+* Copying::                    GMP Copying Conditions (LGPL).
+* Introduction to GMP::        Brief introduction to GNU MP.
+* Installing GMP::             How to configure and compile the GMP library.
+* GMP Basics::                 What every GMP user should know.
+* Reporting Bugs::             How to usefully report bugs.
+* Integer Functions::          Functions for arithmetic on signed integers.
+* Rational Number Functions::  Functions for arithmetic on rational numbers.
+* Floating-point Functions::   Functions for arithmetic on floats.
+* Low-level Functions::        Fast functions for natural numbers.
+* Random Number Functions::    Functions for generating random numbers.
+* Formatted Output::           @code{printf} style output.
+* Formatted Input::            @code{scanf} style input.
+* C++ Class Interface::        Class wrappers around GMP types.
+* Custom Allocation::          How to customize the internal allocation.
+* Language Bindings::          Using GMP from other languages.
+* Algorithms::                 What happens behind the scenes.
+* Internals::                  How values are represented behind the scenes.
+
+* Contributors::               Who brings you this library?
+* References::                 Some useful papers and books to read.
+* GNU Free Documentation License::
+* Concept Index::
+* Function Index::
+@end menu
+
+
+@c  @m{T,N} is $T$ in tex or @math{N} otherwise.  This is an easy way to give
+@c  different forms for math in tex and info.  Commas in N or T don't work,
+@c  but @C{} can be used instead.  \, works in info but not in tex.
+@iftex
+@macro m {T,N}
+@tex$\T\$@end tex
+@end macro
+@end iftex
+@ifnottex
+@macro m {T,N}
+@math{\N\}
+@end macro
+@end ifnottex
+
+@macro C {}
+,
+@end macro
+
+@c  @ms{V,N} is $V_N$ in tex or just vn otherwise.  This suits simple
+@c  subscripts like @ms{x,0}.
+@iftex
+@macro ms {V,N}
+@tex$\V\_{\N\}$@end tex
+@end macro
+@end iftex
+@ifnottex
+@macro ms {V,N}
+\V\\N\
+@end macro
+@end ifnottex
+
+@c  @nicode{S} is plain S in info, or @code{S} elsewhere.  This can be used
+@c  when the quotes that @code{} gives in info aren't wanted, but the
+@c  fontification in tex or html is wanted.  Doesn't work as @nicode{'\\0'}
+@c  though (gives two backslashes in tex).
+@ifinfo
+@macro nicode {S}
+\S\
+@end macro
+@end ifinfo
+@ifnotinfo
+@macro nicode {S}
+@code{\S\}
+@end macro
+@end ifnotinfo
+
+@c  @nisamp{S} is plain S in info, or @samp{S} elsewhere.  This can be used
+@c  when the quotes that @samp{} gives in info aren't wanted, but the
+@c  fontification in tex or html is wanted.
+@ifinfo
+@macro nisamp {S}
+\S\
+@end macro
+@end ifinfo
+@ifnotinfo
+@macro nisamp {S}
+@samp{\S\}
+@end macro
+@end ifnotinfo
+
+@c  Usage: @GMPtimes{}
+@c  Give either \times or the word "times".
+@tex
+\gdef\GMPtimes{\times}
+@end tex
+@ifnottex
+@macro GMPtimes
+times
+@end macro
+@end ifnottex
+
+@c  Usage: @GMPmultiply{}
+@c  Give * in info, or nothing in tex.
+@tex
+\gdef\GMPmultiply{}
+@end tex
+@ifnottex
+@macro GMPmultiply
+*
+@end macro
+@end ifnottex
+
+@c  Usage: @GMPabs{x}
+@c  Give either |x| in tex, or abs(x) in info or html.
+@tex
+\gdef\GMPabs#1{|#1|}
+@end tex
+@ifnottex
+@macro GMPabs {X}
+@abs{}(\X\)
+@end macro
+@end ifnottex
+
+@c  Usage: @GMPfloor{x}
+@c  Give either \lfloor x\rfloor in tex, or floor(x) in info or html.
+@tex
+\gdef\GMPfloor#1{\lfloor #1\rfloor}
+@end tex
+@ifnottex
+@macro GMPfloor {X}
+floor(\X\)
+@end macro
+@end ifnottex
+
+@c  Usage: @GMPceil{x}
+@c  Give either \lceil x\rceil in tex, or ceil(x) in info or html.
+@tex
+\gdef\GMPceil#1{\lceil #1 \rceil}
+@end tex
+@ifnottex
+@macro GMPceil {X}
+ceil(\X\)
+@end macro
+@end ifnottex
+
+@c  Math operators already available in tex, made available in info too.
+@c  For example @bmod{} can be used in both tex and info.
+@ifnottex
+@macro bmod
+mod
+@end macro
+@macro gcd
+gcd
+@end macro
+@macro ge
+>=
+@end macro
+@macro le
+<=
+@end macro
+@macro log
+log
+@end macro
+@macro min
+min
+@end macro
+@macro leftarrow
+<-
+@end macro
+@macro rightarrow
+->
+@end macro
+@end ifnottex
+
+@c  New math operators.
+@c  @abs{} can be used in both tex and info, or just \abs in tex.
+@tex
+\gdef\abs{\mathop{\rm abs}}
+@end tex
+@ifnottex
+@macro abs
+abs
+@end macro
+@end ifnottex
+
+@c  @cross{} is a \times symbol in tex, or an "x" in info.  In tex it works
+@c  inside or outside $ $.
+@tex
+\gdef\cross{\ifmmode\times\else$\times$\fi}
+@end tex
+@ifnottex
+@macro cross
+x
+@end macro
+@end ifnottex
+
+@c  @times{} made available as a "*" in info and html (already works in tex).
+@ifnottex
+@macro times
+*
+@end macro
+@end ifnottex
+
+@c  Usage: @W{text}
+@c  Like @w{} but working in math mode too.
+@tex
+\gdef\W#1{\ifmmode{#1}\else\w{#1}\fi}
+@end tex
+@ifnottex
+@macro W {S}
+@w{\S\}
+@end macro
+@end ifnottex
+
+@c  Usage: \GMPdisplay{text}
+@c  Put the given text in an @display style indent, but without turning off
+@c  paragraph reflow etc.
+@tex
+\gdef\GMPdisplay#1{%
+\noindent
+\advance\leftskip by \lispnarrowing
+#1\par}
+@end tex
+
+@c  Usage: \GMPhat
+@c  A new \hat that will work in math mode, unlike the texinfo redefined
+@c  version.
+@tex
+\gdef\GMPhat{\mathaccent"705E}
+@end tex
+
+@c  Usage: \GMPraise{text}
+@c  For use in a $ $ math expression as an alternative to "^".  This is good
+@c  for @code{} in an exponent, since there seems to be no superscript font
+@c  for that.
+@tex
+\gdef\GMPraise#1{\mskip0.5\thinmuskip\hbox{\raise0.8ex\hbox{#1}}}
+@end tex
+
+@c  Usage: @texlinebreak{}
+@c  A line break as per @*, but only in tex.
+@iftex
+@macro texlinebreak
+@*
+@end macro
+@end iftex
+@ifnottex
+@macro texlinebreak
+@end macro
+@end ifnottex
+
+@c  Usage: @maybepagebreak
+@c  Allow tex to insert a page break, if it feels the urge.
+@c  Normally blocks of @deftypefun/funx are kept together, which can lead to
+@c  some poor page break positioning if it's a big block, like the sets of
+@c  division functions etc.
+@tex
+\gdef\maybepagebreak{\penalty0}
+@end tex
+@ifnottex
+@macro maybepagebreak
+@end macro
+@end ifnottex
+
+@c  Usage: @GMPreftop{info,title}
+@c  Usage: @GMPpxreftop{info,title}
+@c
+@c  Like @ref{} and @pxref{}, but designed for a reference to the top of a
+@c  document, not a particular section.  The TeX output for plain @ref insists
+@c  on printing a particular section, GMPreftop gives just the title.
+@c
+@c  The texinfo manual recommends putting a likely section name in references
+@c  like this, eg. "Introduction", but it seems better to just give the title.
+@c
+@iftex
+@macro GMPreftop{info,title}
+@i{\title\}
+@end macro
+@macro GMPpxreftop{info,title}
+see @i{\title\}
+@end macro
+@end iftex
+@c
+@ifnottex
+@macro GMPreftop{info,title}
+@ref{Top,\title\,\title\,\info\,\title\}
+@end macro
+@macro GMPpxreftop{info,title}
+@pxref{Top,\title\,\title\,\info\,\title\}
+@end macro
+@end ifnottex
+
+
+@node Copying, Introduction to GMP, Top, Top
+@comment  node-name, next, previous,  up
+@unnumbered GNU MP Copying Conditions
+@cindex Copying conditions
+@cindex Conditions for copying GNU MP
+@cindex License conditions
+
+This library is @dfn{free}; this means that everyone is free to use it and
+free to redistribute it on a free basis.  The library is not in the public
+domain; it is copyrighted and there are restrictions on its distribution, but
+these restrictions are designed to permit everything that a good cooperating
+citizen would want to do.  What is not allowed is to try to prevent others
+from further sharing any version of this library that they might get from
+you.@refill
+
+Specifically, we want to make sure that you have the right to give away copies
+of the library, that you receive source code or else can get it if you want
+it, that you can change this library or use pieces of it in new free programs,
+and that you know you can do these things.@refill
+
+To make sure that everyone has such rights, we have to forbid you to deprive
+anyone else of these rights.  For example, if you distribute copies of the GNU
+MP library, you must give the recipients all the rights that you have.  You
+must make sure that they, too, receive or can get the source code.  And you
+must tell them their rights.@refill
+
+Also, for our own protection, we must make certain that everyone finds out
+that there is no warranty for the GNU MP library.  If it is modified by
+someone else and passed on, we want their recipients to know that what they
+have is not what we distributed, so that any problems introduced by others
+will not reflect on our reputation.@refill
+
+More precisely, the GNU MP library is dual licensed, under the conditions of
+the GNU Lesser General Public License version 3 (see
+@file{COPYING.LESSERv3}), or the GNU General Public License version 2 (see
+@file{COPYINGv2}). This is the recipient's choice, and the recipient also has
+the additional option of applying later versions of these licenses. (The
+reason for this dual licensing is to make it possible to use the library with
+programs which are licensed under GPL version 2, but which for historical or
+other reasons do not allow use under later versions of the GPL).
+
+Programs which are not part of the library itself, such as demonstration
+programs and the GMP testsuite, are licensed under the terms of the GNU
+General Public License version 3 (see @file{COPYINGv3}), or any later
+version.
+
+
+@node Introduction to GMP, Installing GMP, Copying, Top
+@comment  node-name,  next,  previous,  up
+@chapter Introduction to GNU MP
+@cindex Introduction
+
+GNU MP is a portable library written in C for arbitrary precision arithmetic
+on integers, rational numbers, and floating-point numbers.  It aims to provide
+the fastest possible arithmetic for all applications that need higher
+precision than is directly supported by the basic C types.
+
+Many applications use just a few hundred bits of precision; but some
+applications may need thousands or even millions of bits.  GMP is designed to
+give good performance for both, by choosing algorithms based on the sizes of
+the operands, and by carefully keeping the overhead at a minimum.
+
+The speed of GMP is achieved by using fullwords as the basic arithmetic type,
+by using sophisticated algorithms, by including carefully optimized assembly
+code for the most common inner loops for many different CPUs, and by a general
+emphasis on speed (as opposed to simplicity or elegance).
+
+There is assembly code for these CPUs:
+@cindex CPU types
+ARM Cortex-A9, Cortex-A15, and generic ARM,
+DEC Alpha 21064, 21164, and 21264,
+AMD K8 and K10 (sold under many brands, e.g. Athlon64, Phenom, Opteron)
+Bulldozer, and Bobcat,
+Intel Pentium, Pentium Pro/II/III, Pentium 4, Core2, Nehalem, Sandy bridge, Haswell, generic x86,
+Intel IA-64,
+Motorola/IBM PowerPC 32 and 64 such as POWER970, POWER5, POWER6, and POWER7,
+MIPS 32-bit and 64-bit,
+SPARC 32-bit ad 64-bit with special support for all UltraSPARC models.
+There is also assembly code for many obsolete CPUs.
+
+
+@cindex Home page
+@cindex Web page
+@noindent
+For up-to-date information on GMP, please see the GMP web pages at
+
+@display
+@uref{https://gmplib.org/}
+@end display
+
+@cindex Latest version of GMP
+@cindex Anonymous FTP of latest version
+@cindex FTP of latest version
+@noindent
+The latest version of the library is available at
+
+@display
+@uref{https://ftp.gnu.org/gnu/gmp/}
+@end display
+
+Many sites around the world mirror @samp{ftp.gnu.org}, please use a mirror
+near you, see @uref{https://www.gnu.org/order/ftp.html} for a full list.
+
+@cindex Mailing lists
+There are three public mailing lists of interest.  One for release
+announcements, one for general questions and discussions about usage of the GMP
+library and one for bug reports.  For more information, see
+
+@display
+@uref{https://gmplib.org/mailman/listinfo/}.
+@end display
+
+The proper place for bug reports is @email{gmp-bugs@@gmplib.org}.  See
+@ref{Reporting Bugs} for information about reporting bugs.
+
+@sp 1
+@section How to use this Manual
+@cindex About this manual
+
+Everyone should read @ref{GMP Basics}.  If you need to install the library
+yourself, then read @ref{Installing GMP}.  If you have a system with multiple
+ABIs, then read @ref{ABI and ISA}, for the compiler options that must be used
+on applications.
+
+The rest of the manual can be used for later reference, although it is
+probably a good idea to glance through it.
+
+
+@node Installing GMP, GMP Basics, Introduction to GMP, Top
+@comment  node-name,  next,  previous,  up
+@chapter Installing GMP
+@cindex Installing GMP
+@cindex Configuring GMP
+@cindex Building GMP
+
+GMP has an autoconf/automake/libtool based configuration system.  On a
+Unix-like system a basic build can be done with
+
+@example
+./configure
+make
+@end example
+
+@noindent
+Some self-tests can be run with
+
+@example
+make check
+@end example
+
+@noindent
+And you can install (under @file{/usr/local} by default) with
+
+@example
+make install
+@end example
+
+If you experience problems, please report them to @email{gmp-bugs@@gmplib.org}.
+See @ref{Reporting Bugs}, for information on what to include in useful bug
+reports.
+
+@menu
+* Build Options::
+* ABI and ISA::
+* Notes for Package Builds::
+* Notes for Particular Systems::
+* Known Build Problems::
+* Performance optimization::
+@end menu
+
+
+@node Build Options, ABI and ISA, Installing GMP, Installing GMP
+@section Build Options
+@cindex Build options
+
+All the usual autoconf configure options are available, run @samp{./configure
+--help} for a summary.  The file @file{INSTALL.autoconf} has some generic
+installation information too.
+
+@table @asis
+@item Tools
+@cindex Non-Unix systems
+@samp{configure} requires various Unix-like tools.  See @ref{Notes for
+Particular Systems}, for some options on non-Unix systems.
+
+It might be possible to build without the help of @samp{configure}, certainly
+all the code is there, but unfortunately you'll be on your own.
+
+@item Build Directory
+@cindex Build directory
+To compile in a separate build directory, @command{cd} to that directory, and
+prefix the configure command with the path to the GMP source directory.  For
+example
+
+@example
+cd /my/build/dir
+/my/sources/gmp-@value{VERSION}/configure
+@end example
+
+Not all @samp{make} programs have the necessary features (@code{VPATH}) to
+support this.  In particular, SunOS and Slowaris @command{make} have bugs that
+make them unable to build in a separate directory.  Use GNU @command{make}
+instead.
+
+@item @option{--prefix} and @option{--exec-prefix}
+@cindex Prefix
+@cindex Exec prefix
+@cindex Install prefix
+@cindex @code{--prefix}
+@cindex @code{--exec-prefix}
+The @option{--prefix} option can be used in the normal way to direct GMP to
+install under a particular tree.  The default is @samp{/usr/local}.
+
+@option{--exec-prefix} can be used to direct architecture-dependent files like
+@file{libgmp.a} to a different location.  This can be used to share
+architecture-independent parts like the documentation, but separate the
+dependent parts.  Note however that @file{gmp.h} and @file{mp.h} are
+architecture-dependent since they encode certain aspects of @file{libgmp}, so
+it will be necessary to ensure both @file{$prefix/include} and
+@file{$exec_prefix/include} are available to the compiler.
+
+@item @option{--disable-shared}, @option{--disable-static}
+@cindex @code{--disable-shared}
+@cindex @code{--disable-static}
+By default both shared and static libraries are built (where possible), but
+one or other can be disabled.  Shared libraries result in smaller executables
+and permit code sharing between separate running processes, but on some CPUs
+are slightly slower, having a small cost on each function call.
+
+@item Native Compilation, @option{--build=CPU-VENDOR-OS}
+@cindex Native compilation
+@cindex Build system
+@cindex @code{--build}
+For normal native compilation, the system can be specified with
+@samp{--build}.  By default @samp{./configure} uses the output from running
+@samp{./config.guess}.  On some systems @samp{./config.guess} can determine
+the exact CPU type, on others it will be necessary to give it explicitly.  For
+example,
+
+@example
+./configure --build=ultrasparc-sun-solaris2.7
+@end example
+
+In all cases the @samp{OS} part is important, since it controls how libtool
+generates shared libraries.  Running @samp{./config.guess} is the simplest way
+to see what it should be, if you don't know already.
+
+@item Cross Compilation, @option{--host=CPU-VENDOR-OS}
+@cindex Cross compiling
+@cindex Host system
+@cindex @code{--host}
+When cross-compiling, the system used for compiling is given by @samp{--build}
+and the system where the library will run is given by @samp{--host}.  For
+example when using a FreeBSD Athlon system to build GNU/Linux m68k binaries,
+
+@example
+./configure --build=athlon-pc-freebsd3.5 --host=m68k-mac-linux-gnu
+@end example
+
+Compiler tools are sought first with the host system type as a prefix.  For
+example @command{m68k-mac-linux-gnu-ranlib} is tried, then plain
+@command{ranlib}.  This makes it possible for a set of cross-compiling tools
+to co-exist with native tools.  The prefix is the argument to @samp{--host},
+and this can be an alias, such as @samp{m68k-linux}.  But note that tools
+don't have to be setup this way, it's enough to just have a @env{PATH} with a
+suitable cross-compiling @command{cc} etc.
+
+Compiling for a different CPU in the same family as the build system is a form
+of cross-compilation, though very possibly this would merely be special
+options on a native compiler.  In any case @samp{./configure} avoids depending
+on being able to run code on the build system, which is important when
+creating binaries for a newer CPU since they very possibly won't run on the
+build system.
+
+In all cases the compiler must be able to produce an executable (of whatever
+format) from a standard C @code{main}.  Although only object files will go to
+make up @file{libgmp}, @samp{./configure} uses linking tests for various
+purposes, such as determining what functions are available on the host system.
+
+Currently a warning is given unless an explicit @samp{--build} is used when
+cross-compiling, because it may not be possible to correctly guess the build
+system type if the @env{PATH} has only a cross-compiling @command{cc}.
+
+Note that the @samp{--target} option is not appropriate for GMP@.  It's for use
+when building compiler tools, with @samp{--host} being where they will run,
+and @samp{--target} what they'll produce code for.  Ordinary programs or
+libraries like GMP are only interested in the @samp{--host} part, being where
+they'll run.  (Some past versions of GMP used @samp{--target} incorrectly.)
+
+@item CPU types
+@cindex CPU types
+In general, if you want a library that runs as fast as possible, you should
+configure GMP for the exact CPU type your system uses.  However, this may mean
+the binaries won't run on older members of the family, and might run slower on
+other members, older or newer.  The best idea is always to build GMP for the
+exact machine type you intend to run it on.
+
+The following CPUs have specific support.  See @file{configure.ac} for details
+of what code and compiler options they select.
+
+@itemize @bullet
+
+@c Keep this formatting, it's easy to read and it can be grepped to
+@c automatically test that CPUs listed get through ./config.sub
+
+@item
+Alpha:
+@nisamp{alpha},
+@nisamp{alphaev5},
+@nisamp{alphaev56},
+@nisamp{alphapca56},
+@nisamp{alphapca57},
+@nisamp{alphaev6},
+@nisamp{alphaev67},
+@nisamp{alphaev68}
+@nisamp{alphaev7}
+
+@item
+Cray:
+@nisamp{c90},
+@nisamp{j90},
+@nisamp{t90},
+@nisamp{sv1}
+
+@item
+HPPA:
+@nisamp{hppa1.0},
+@nisamp{hppa1.1},
+@nisamp{hppa2.0},
+@nisamp{hppa2.0n},
+@nisamp{hppa2.0w},
+@nisamp{hppa64}
+
+@item
+IA-64:
+@nisamp{ia64},
+@nisamp{itanium},
+@nisamp{itanium2}
+
+@item
+MIPS:
+@nisamp{mips},
+@nisamp{mips3},
+@nisamp{mips64}
+
+@item
+Motorola:
+@nisamp{m68k},
+@nisamp{m68000},
+@nisamp{m68010},
+@nisamp{m68020},
+@nisamp{m68030},
+@nisamp{m68040},
+@nisamp{m68060},
+@nisamp{m68302},
+@nisamp{m68360},
+@nisamp{m88k},
+@nisamp{m88110}
+
+@item
+POWER:
+@nisamp{power},
+@nisamp{power1},
+@nisamp{power2},
+@nisamp{power2sc}
+
+@item
+PowerPC:
+@nisamp{powerpc},
+@nisamp{powerpc64},
+@nisamp{powerpc401},
+@nisamp{powerpc403},
+@nisamp{powerpc405},
+@nisamp{powerpc505},
+@nisamp{powerpc601},
+@nisamp{powerpc602},
+@nisamp{powerpc603},
+@nisamp{powerpc603e},
+@nisamp{powerpc604},
+@nisamp{powerpc604e},
+@nisamp{powerpc620},
+@nisamp{powerpc630},
+@nisamp{powerpc740},
+@nisamp{powerpc7400},
+@nisamp{powerpc7450},
+@nisamp{powerpc750},
+@nisamp{powerpc801},
+@nisamp{powerpc821},
+@nisamp{powerpc823},
+@nisamp{powerpc860},
+@nisamp{powerpc970}
+
+@item
+SPARC:
+@nisamp{sparc},
+@nisamp{sparcv8},
+@nisamp{microsparc},
+@nisamp{supersparc},
+@nisamp{sparcv9},
+@nisamp{ultrasparc},
+@nisamp{ultrasparc2},
+@nisamp{ultrasparc2i},
+@nisamp{ultrasparc3},
+@nisamp{sparc64}
+
+@item
+x86 family:
+@nisamp{i386},
+@nisamp{i486},
+@nisamp{i586},
+@nisamp{pentium},
+@nisamp{pentiummmx},
+@nisamp{pentiumpro},
+@nisamp{pentium2},
+@nisamp{pentium3},
+@nisamp{pentium4},
+@nisamp{k6},
+@nisamp{k62},
+@nisamp{k63},
+@nisamp{athlon},
+@nisamp{amd64},
+@nisamp{viac3},
+@nisamp{viac32}
+
+@item
+Other:
+@nisamp{arm},
+@nisamp{sh},
+@nisamp{sh2},
+@nisamp{vax},
+@end itemize
+
+CPUs not listed will use generic C code.
+
+@item Generic C Build
+@cindex Generic C
+If some of the assembly code causes problems, or if otherwise desired, the
+generic C code can be selected with the configure @option{--disable-assembly}.
+
+Note that this will run quite slowly, but it should be portable and should at
+least make it possible to get something running if all else fails.
+
+@item Fat binary, @option{--enable-fat}
+@cindex Fat binary
+@cindex @code{--enable-fat}
+Using @option{--enable-fat} selects a ``fat binary'' build on x86, where
+optimized low level subroutines are chosen at runtime according to the CPU
+detected.  This means more code, but gives good performance on all x86 chips.
+(This option might become available for more architectures in the future.)
+
+@item @option{ABI}
+@cindex ABI
+On some systems GMP supports multiple ABIs (application binary interfaces),
+meaning data type sizes and calling conventions.  By default GMP chooses the
+best ABI available, but a particular ABI can be selected.  For example
+
+@example
+./configure --host=mips64-sgi-irix6 ABI=n32
+@end example
+
+See @ref{ABI and ISA}, for the available choices on relevant CPUs, and what
+applications need to do.
+
+@item @option{CC}, @option{CFLAGS}
+@cindex C compiler
+@cindex @code{CC}
+@cindex @code{CFLAGS}
+By default the C compiler used is chosen from among some likely candidates,
+with @command{gcc} normally preferred if it's present.  The usual
+@samp{CC=whatever} can be passed to @samp{./configure} to choose something
+different.
+
+For various systems, default compiler flags are set based on the CPU and
+compiler.  The usual @samp{CFLAGS="-whatever"} can be passed to
+@samp{./configure} to use something different or to set good flags for systems
+GMP doesn't otherwise know.
+
+The @samp{CC} and @samp{CFLAGS} used are printed during @samp{./configure},
+and can be found in each generated @file{Makefile}.  This is the easiest way
+to check the defaults when considering changing or adding something.
+
+Note that when @samp{CC} and @samp{CFLAGS} are specified on a system
+supporting multiple ABIs it's important to give an explicit
+@samp{ABI=whatever}, since GMP can't determine the ABI just from the flags and
+won't be able to select the correct assembly code.
+
+If just @samp{CC} is selected then normal default @samp{CFLAGS} for that
+compiler will be used (if GMP recognises it).  For example @samp{CC=gcc} can
+be used to force the use of GCC, with default flags (and default ABI).
+
+@item @option{CPPFLAGS}
+@cindex @code{CPPFLAGS}
+Any flags like @samp{-D} defines or @samp{-I} includes required by the
+preprocessor should be set in @samp{CPPFLAGS} rather than @samp{CFLAGS}.
+Compiling is done with both @samp{CPPFLAGS} and @samp{CFLAGS}, but
+preprocessing uses just @samp{CPPFLAGS}.  This distinction is because most
+preprocessors won't accept all the flags the compiler does.  Preprocessing is
+done separately in some configure tests.
+
+@item @option{CC_FOR_BUILD}
+@cindex @code{CC_FOR_BUILD}
+Some build-time programs are compiled and run to generate host-specific data
+tables.  @samp{CC_FOR_BUILD} is the compiler used for this.  It doesn't need
+to be in any particular ABI or mode, it merely needs to generate executables
+that can run.  The default is to try the selected @samp{CC} and some likely
+candidates such as @samp{cc} and @samp{gcc}, looking for something that works.
+
+No flags are used with @samp{CC_FOR_BUILD} because a simple invocation like
+@samp{cc foo.c} should be enough.  If some particular options are required
+they can be included as for instance @samp{CC_FOR_BUILD="cc -whatever"}.
+
+@item C++ Support, @option{--enable-cxx}
+@cindex C++ support
+@cindex @code{--enable-cxx}
+C++ support in GMP can be enabled with @samp{--enable-cxx}, in which case a
+C++ compiler will be required.  As a convenience @samp{--enable-cxx=detect}
+can be used to enable C++ support only if a compiler can be found.  The C++
+support consists of a library @file{libgmpxx.la} and header file
+@file{gmpxx.h} (@pxref{Headers and Libraries}).
+
+A separate @file{libgmpxx.la} has been adopted rather than having C++ objects
+within @file{libgmp.la} in order to ensure dynamic linked C programs aren't
+bloated by a dependency on the C++ standard library, and to avoid any chance
+that the C++ compiler could be required when linking plain C programs.
+
+@file{libgmpxx.la} will use certain internals from @file{libgmp.la} and can
+only be expected to work with @file{libgmp.la} from the same GMP version.
+Future changes to the relevant internals will be accompanied by renaming, so a
+mismatch will cause unresolved symbols rather than perhaps mysterious
+misbehaviour.
+
+In general @file{libgmpxx.la} will be usable only with the C++ compiler that
+built it, since name mangling and runtime support are usually incompatible
+between different compilers.
+
+@item @option{CXX}, @option{CXXFLAGS}
+@cindex C++ compiler
+@cindex @code{CXX}
+@cindex @code{CXXFLAGS}
+When C++ support is enabled, the C++ compiler and its flags can be set with
+variables @samp{CXX} and @samp{CXXFLAGS} in the usual way.  The default for
+@samp{CXX} is the first compiler that works from a list of likely candidates,
+with @command{g++} normally preferred when available.  The default for
+@samp{CXXFLAGS} is to try @samp{CFLAGS}, @samp{CFLAGS} without @samp{-g}, then
+for @command{g++} either @samp{-g -O2} or @samp{-O2}, or for other compilers
+@samp{-g} or nothing.  Trying @samp{CFLAGS} this way is convenient when using
+@samp{gcc} and @samp{g++} together, since the flags for @samp{gcc} will
+usually suit @samp{g++}.
+
+It's important that the C and C++ compilers match, meaning their startup and
+runtime support routines are compatible and that they generate code in the
+same ABI (if there's a choice of ABIs on the system).  @samp{./configure}
+isn't currently able to check these things very well itself, so for that
+reason @samp{--disable-cxx} is the default, to avoid a build failure due to a
+compiler mismatch.  Perhaps this will change in the future.
+
+Incidentally, it's normally not good enough to set @samp{CXX} to the same as
+@samp{CC}.  Although @command{gcc} for instance recognises @file{foo.cc} as
+C++ code, only @command{g++} will invoke the linker the right way when
+building an executable or shared library from C++ object files.
+
+@item Temporary Memory, @option{--enable-alloca=<choice>}
+@cindex Temporary memory
+@cindex Stack overflow
+@cindex @code{alloca}
+@cindex @code{--enable-alloca}
+GMP allocates temporary workspace using one of the following three methods,
+which can be selected with for instance
+@samp{--enable-alloca=malloc-reentrant}.
+
+@itemize @bullet
+@item
+@samp{alloca} - C library or compiler builtin.
+@item
+@samp{malloc-reentrant} - the heap, in a re-entrant fashion.
+@item
+@samp{malloc-notreentrant} - the heap, with global variables.
+@end itemize
+
+For convenience, the following choices are also available.
+@samp{--disable-alloca} is the same as @samp{no}.
+
+@itemize @bullet
+@item
+@samp{yes} - a synonym for @samp{alloca}.
+@item
+@samp{no} - a synonym for @samp{malloc-reentrant}.
+@item
+@samp{reentrant} - @code{alloca} if available, otherwise
+@samp{malloc-reentrant}.  This is the default.
+@item
+@samp{notreentrant} - @code{alloca} if available, otherwise
+@samp{malloc-notreentrant}.
+@end itemize
+
+@code{alloca} is reentrant and fast, and is recommended.  It actually allocates
+just small blocks on the stack; larger ones use malloc-reentrant.
+
+@samp{malloc-reentrant} is, as the name suggests, reentrant and thread safe,
+but @samp{malloc-notreentrant} is faster and should be used if reentrancy is
+not required.
+
+The two malloc methods in fact use the memory allocation functions selected by
+@code{mp_set_memory_functions}, these being @code{malloc} and friends by
+default.  @xref{Custom Allocation}.
+
+An additional choice @samp{--enable-alloca=debug} is available, to help when
+debugging memory related problems (@pxref{Debugging}).
+
+@item FFT Multiplication, @option{--disable-fft}
+@cindex FFT multiplication
+@cindex @code{--disable-fft}
+By default multiplications are done using Karatsuba, 3-way Toom, higher degree
+Toom, and Fermat FFT@.  The FFT is only used on large to very large operands
+and can be disabled to save code size if desired.
+
+@item Assertion Checking, @option{--enable-assert}
+@cindex Assertion checking
+@cindex @code{--enable-assert}
+This option enables some consistency checking within the library.  This can be
+of use while debugging, @pxref{Debugging}.
+
+@item Execution Profiling, @option{--enable-profiling=prof/gprof/instrument}
+@cindex Execution profiling
+@cindex @code{--enable-profiling}
+Enable profiling support, in one of various styles, @pxref{Profiling}.
+
+@item @option{MPN_PATH}
+@cindex @code{MPN_PATH}
+Various assembly versions of each mpn subroutines are provided.  For a given
+CPU, a search is made though a path to choose a version of each.  For example
+@samp{sparcv8} has
+
+@example
+MPN_PATH="sparc32/v8 sparc32 generic"
+@end example
+
+which means look first for v8 code, then plain sparc32 (which is v7), and
+finally fall back on generic C@.  Knowledgeable users with special requirements
+can specify a different path.  Normally this is completely unnecessary.
+
+@item Documentation
+@cindex Documentation formats
+@cindex Texinfo
+The source for the document you're now reading is @file{doc/gmp.texi}, in
+Texinfo format, see @GMPreftop{texinfo, Texinfo}.
+
+@cindex Postscript
+@cindex DVI
+@cindex PDF
+Info format @samp{doc/gmp.info} is included in the distribution.  The usual
+automake targets are available to make PostScript, DVI, PDF and HTML (these
+will require various @TeX{} and Texinfo tools).
+
+@cindex DocBook
+@cindex XML
+DocBook and XML can be generated by the Texinfo @command{makeinfo} program
+too, see @ref{makeinfo options,, Options for @command{makeinfo}, texinfo,
+Texinfo}.
+
+Some supplementary notes can also be found in the @file{doc} subdirectory.
+
+@end table
+
+
+@need 2000
+@node ABI and ISA, Notes for Package Builds, Build Options, Installing GMP
+@section ABI and ISA
+@cindex ABI
+@cindex Application Binary Interface
+@cindex ISA
+@cindex Instruction Set Architecture
+
+ABI (Application Binary Interface) refers to the calling conventions between
+functions, meaning what registers are used and what sizes the various C data
+types are.  ISA (Instruction Set Architecture) refers to the instructions and
+registers a CPU has available.
+
+Some 64-bit ISA CPUs have both a 64-bit ABI and a 32-bit ABI defined, the
+latter for compatibility with older CPUs in the family.  GMP supports some
+CPUs like this in both ABIs.  In fact within GMP @samp{ABI} means a
+combination of chip ABI, plus how GMP chooses to use it.  For example in some
+32-bit ABIs, GMP may support a limb as either a 32-bit @code{long} or a 64-bit
+@code{long long}.
+
+By default GMP chooses the best ABI available for a given system, and this
+generally gives significantly greater speed.  But an ABI can be chosen
+explicitly to make GMP compatible with other libraries, or particular
+application requirements.  For example,
+
+@example
+./configure ABI=32
+@end example
+
+In all cases it's vital that all object code used in a given program is
+compiled for the same ABI.
+
+Usually a limb is implemented as a @code{long}.  When a @code{long long} limb
+is used this is encoded in the generated @file{gmp.h}.  This is convenient for
+applications, but it does mean that @file{gmp.h} will vary, and can't be just
+copied around.  @file{gmp.h} remains compiler independent though, since all
+compilers for a particular ABI will be expected to use the same limb type.
+
+Currently no attempt is made to follow whatever conventions a system has for
+installing library or header files built for a particular ABI@.  This will
+probably only matter when installing multiple builds of GMP, and it might be
+as simple as configuring with a special @samp{libdir}, or it might require
+more than that.  Note that builds for different ABIs need to done separately,
+with a fresh @command{./configure} and @command{make} each.
+
+@sp 1
+@table @asis
+@need 1000
+@item AMD64 (@samp{x86_64})
+@cindex AMD64
+On AMD64 systems supporting both 32-bit and 64-bit modes for applications, the
+following ABI choices are available.
+
+@table @asis
+@item @samp{ABI=64}
+The 64-bit ABI uses 64-bit limbs and pointers and makes full use of the chip
+architecture.  This is the default.  Applications will usually not need
+special compiler flags, but for reference the option is
+
+@example
+gcc  -m64
+@end example
+
+@item @samp{ABI=32}
+The 32-bit ABI is the usual i386 conventions.  This will be slower, and is not
+recommended except for inter-operating with other code not yet 64-bit capable.
+Applications must be compiled with
+
+@example
+gcc  -m32
+@end example
+
+(In GCC 2.95 and earlier there's no @samp{-m32} option, it's the only mode.)
+
+@item @samp{ABI=x32}
+The x32 ABI uses 64-bit limbs but 32-bit pointers.  Like the 64-bit ABI, it
+makes full use of the chip's arithmetic capabilities.  This ABI is not
+supported by all operating systems.
+
+@example
+gcc  -mx32
+@end example
+
+@end table
+
+@sp 1
+@need 1000
+@item HPPA 2.0 (@samp{hppa2.0*}, @samp{hppa64})
+@cindex HPPA
+@cindex HP-UX
+@table @asis
+@item @samp{ABI=2.0w}
+The 2.0w ABI uses 64-bit limbs and pointers and is available on HP-UX 11 or
+up.  Applications must be compiled with
+
+@example
+gcc [built for 2.0w]
+cc  +DD64
+@end example
+
+@item @samp{ABI=2.0n}
+The 2.0n ABI means the 32-bit HPPA 1.0 ABI and all its normal calling
+conventions, but with 64-bit instructions permitted within functions.  GMP
+uses a 64-bit @code{long long} for a limb.  This ABI is available on hppa64
+GNU/Linux and on HP-UX 10 or higher.  Applications must be compiled with
+
+@example
+gcc [built for 2.0n]
+cc  +DA2.0 +e
+@end example
+
+Note that current versions of GCC (eg.@: 3.2) don't generate 64-bit
+instructions for @code{long long} operations and so may be slower than for
+2.0w.  (The GMP assembly code is the same though.)
+
+@item @samp{ABI=1.0}
+HPPA 2.0 CPUs can run all HPPA 1.0 and 1.1 code in the 32-bit HPPA 1.0 ABI@.
+No special compiler options are needed for applications.
+@end table
+
+All three ABIs are available for CPU types @samp{hppa2.0w}, @samp{hppa2.0} and
+@samp{hppa64}, but for CPU type @samp{hppa2.0n} only 2.0n or 1.0 are
+considered.
+
+Note that GCC on HP-UX has no options to choose between 2.0n and 2.0w modes,
+unlike HP @command{cc}.  Instead it must be built for one or the other ABI@.
+GMP will detect how it was built, and skip to the corresponding @samp{ABI}.
+
+@sp 1
+@need 1500
+@item IA-64 under HP-UX (@samp{ia64*-*-hpux*}, @samp{itanium*-*-hpux*})
+@cindex IA-64
+@cindex HP-UX
+HP-UX supports two ABIs for IA-64.  GMP performance is the same in both.
+
+@table @asis
+@item @samp{ABI=32}
+In the 32-bit ABI, pointers, @code{int}s and @code{long}s are 32 bits and GMP
+uses a 64 bit @code{long long} for a limb.  Applications can be compiled
+without any special flags since this ABI is the default in both HP C and GCC,
+but for reference the flags are
+
+@example
+gcc  -milp32
+cc   +DD32
+@end example
+
+@item @samp{ABI=64}
+In the 64-bit ABI, @code{long}s and pointers are 64 bits and GMP uses a
+@code{long} for a limb.  Applications must be compiled with
+
+@example
+gcc  -mlp64
+cc   +DD64
+@end example
+@end table
+
+On other IA-64 systems, GNU/Linux for instance, @samp{ABI=64} is the only
+choice.
+
+@sp 1
+@need 1000
+@item MIPS under IRIX 6 (@samp{mips*-*-irix[6789]})
+@cindex MIPS
+@cindex IRIX
+IRIX 6 always has a 64-bit MIPS 3 or better CPU, and supports ABIs o32, n32,
+and 64.  n32 or 64 are recommended, and GMP performance will be the same in
+each.  The default is n32.
+
+@table @asis
+@item @samp{ABI=o32}
+The o32 ABI is 32-bit pointers and integers, and no 64-bit operations.  GMP
+will be slower than in n32 or 64, this option only exists to support old
+compilers, eg.@: GCC 2.7.2.  Applications can be compiled with no special
+flags on an old compiler, or on a newer compiler with
+
+@example
+gcc  -mabi=32
+cc   -32
+@end example
+
+@item @samp{ABI=n32}
+The n32 ABI is 32-bit pointers and integers, but with a 64-bit limb using a
+@code{long long}.  Applications must be compiled with
+
+@example
+gcc  -mabi=n32
+cc   -n32
+@end example
+
+@item @samp{ABI=64}
+The 64-bit ABI is 64-bit pointers and integers.  Applications must be compiled
+with
+
+@example
+gcc  -mabi=64
+cc   -64
+@end example
+@end table
+
+Note that MIPS GNU/Linux, as of kernel version 2.2, doesn't have the necessary
+support for n32 or 64 and so only gets a 32-bit limb and the MIPS 2 code.
+
+@sp 1
+@need 1000
+@item PowerPC 64 (@samp{powerpc64}, @samp{powerpc620}, @samp{powerpc630}, @samp{powerpc970}, @samp{power4}, @samp{power5})
+@cindex PowerPC
+@table @asis
+@item @samp{ABI=mode64}
+@cindex AIX
+The AIX 64 ABI uses 64-bit limbs and pointers and is the default on PowerPC 64
+@samp{*-*-aix*} systems.  Applications must be compiled with
+
+@example
+gcc  -maix64
+xlc  -q64
+@end example
+
+On 64-bit GNU/Linux, BSD, and Mac OS X/Darwin systems, the applications must
+be compiled with
+
+@example
+gcc  -m64
+@end example
+
+@item @samp{ABI=mode32}
+The @samp{mode32} ABI uses a 64-bit @code{long long} limb but with the chip
+still in 32-bit mode and using 32-bit calling conventions.  This is the default
+for systems where the true 64-bit ABI is unavailable.  No special compiler
+options are typically needed for applications.  This ABI is not available under
+AIX.
+
+@item @samp{ABI=32}
+This is the basic 32-bit PowerPC ABI, with a 32-bit limb.  No special compiler
+options are needed for applications.
+@end table
+
+GMP's speed is greatest for the @samp{mode64} ABI, the @samp{mode32} ABI is 2nd
+best.  In @samp{ABI=32} only the 32-bit ISA is used and this doesn't make full
+use of a 64-bit chip.
+
+@sp 1
+@need 1000
+@item Sparc V9 (@samp{sparc64}, @samp{sparcv9}, @samp{ultrasparc*})
+@cindex Sparc V9
+@cindex Solaris
+@cindex Sun
+@table @asis
+@item @samp{ABI=64}
+The 64-bit V9 ABI is available on the various BSD sparc64 ports, recent
+versions of Sparc64 GNU/Linux, and Solaris 2.7 and up (when the kernel is in
+64-bit mode).  GCC 3.2 or higher, or Sun @command{cc} is required.  On
+GNU/Linux, depending on the default @command{gcc} mode, applications must be
+compiled with
+
+@example
+gcc  -m64
+@end example
+
+On Solaris applications must be compiled with
+
+@example
+gcc  -m64 -mptr64 -Wa,-xarch=v9 -mcpu=v9
+cc   -xarch=v9
+@end example
+
+On the BSD sparc64 systems no special options are required, since 64-bits is
+the only ABI available.
+
+@item @samp{ABI=32}
+For the basic 32-bit ABI, GMP still uses as much of the V9 ISA as it can.  In
+the Sun documentation this combination is known as ``v8plus''.  On GNU/Linux,
+depending on the default @command{gcc} mode, applications may need to be
+compiled with
+
+@example
+gcc  -m32
+@end example
+
+On Solaris, no special compiler options are required for applications, though
+using something like the following is recommended.  (@command{gcc} 2.8 and
+earlier only support @samp{-mv8} though.)
+
+@example
+gcc  -mv8plus
+cc   -xarch=v8plus
+@end example
+@end table
+
+GMP speed is greatest in @samp{ABI=64}, so it's the default where available.
+The speed is partly because there are extra registers available and partly
+because 64-bits is considered the more important case and has therefore had
+better code written for it.
+
+Don't be confused by the names of the @samp{-m} and @samp{-x} compiler
+options, they're called @samp{arch} but effectively control both ABI and ISA@.
+
+On Solaris 2.6 and earlier, only @samp{ABI=32} is available since the kernel
+doesn't save all registers.
+
+On Solaris 2.7 with the kernel in 32-bit mode, a normal native build will
+reject @samp{ABI=64} because the resulting executables won't run.
+@samp{ABI=64} can still be built if desired by making it look like a
+cross-compile, for example
+
+@example
+./configure --build=none --host=sparcv9-sun-solaris2.7 ABI=64
+@end example
+@end table
+
+
+@need 2000
+@node Notes for Package Builds, Notes for Particular Systems, ABI and ISA, Installing GMP
+@section Notes for Package Builds
+@cindex Build notes for binary packaging
+@cindex Packaged builds
+
+GMP should present no great difficulties for packaging in a binary
+distribution.
+
+@cindex Libtool versioning
+@cindex Shared library versioning
+Libtool is used to build the library and @samp{-version-info} is set
+appropriately, having started from @samp{3:0:0} in GMP 3.0 (@pxref{Versioning,
+Library interface versions, Library interface versions, libtool, GNU
+Libtool}).
+
+The GMP 4 series will be upwardly binary compatible in each release and will
+be upwardly binary compatible with all of the GMP 3 series.  Additional
+function interfaces may be added in each release, so on systems where libtool
+versioning is not fully checked by the loader an auxiliary mechanism may be
+needed to express that a dynamic linked application depends on a new enough
+GMP.
+
+An auxiliary mechanism may also be needed to express that @file{libgmpxx.la}
+(from @option{--enable-cxx}, @pxref{Build Options}) requires @file{libgmp.la}
+from the same GMP version, since this is not done by the libtool versioning,
+nor otherwise.  A mismatch will result in unresolved symbols from the linker,
+or perhaps the loader.
+
+When building a package for a CPU family, care should be taken to use
+@samp{--host} (or @samp{--build}) to choose the least common denominator among
+the CPUs which might use the package.  For example this might mean plain
+@samp{sparc} (meaning V7) for SPARCs.
+
+For x86s, @option{--enable-fat} sets things up for a fat binary build, making a
+runtime selection of optimized low level routines.  This is a good choice for
+packaging to run on a range of x86 chips.
+
+Users who care about speed will want GMP built for their exact CPU type, to
+make best use of the available optimizations.  Providing a way to suitably
+rebuild a package may be useful.  This could be as simple as making it
+possible for a user to omit @samp{--build} (and @samp{--host}) so
+@samp{./config.guess} will detect the CPU@.  But a way to manually specify a
+@samp{--build} will be wanted for systems where @samp{./config.guess} is
+inexact.
+
+On systems with multiple ABIs, a packaged build will need to decide which
+among the choices is to be provided, see @ref{ABI and ISA}.  A given run of
+@samp{./configure} etc will only build one ABI@.  If a second ABI is also
+required then a second run of @samp{./configure} etc must be made, starting
+from a clean directory tree (@samp{make distclean}).
+
+As noted under ``ABI and ISA'', currently no attempt is made to follow system
+conventions for install locations that vary with ABI, such as
+@file{/usr/lib/sparcv9} for @samp{ABI=64} as opposed to @file{/usr/lib} for
+@samp{ABI=32}.  A package build can override @samp{libdir} and other standard
+variables as necessary.
+
+Note that @file{gmp.h} is a generated file, and will be architecture and ABI
+dependent.  When attempting to install two ABIs simultaneously it will be
+important that an application compile gets the correct @file{gmp.h} for its
+desired ABI@.  If compiler include paths don't vary with ABI options then it
+might be necessary to create a @file{/usr/include/gmp.h} which tests
+preprocessor symbols and chooses the correct actual @file{gmp.h}.
+
+
+@need 2000
+@node Notes for Particular Systems, Known Build Problems, Notes for Package Builds, Installing GMP
+@section Notes for Particular Systems
+@cindex Build notes for particular systems
+@cindex Particular systems
+@cindex Systems
+@table @asis
+
+@c This section is more or less meant for notes about performance or about
+@c build problems that have been worked around but might leave a user
+@c scratching their head.  Fun with different ABIs on a system belongs in the
+@c above section.
+
+@item AIX 3 and 4
+@cindex AIX
+On systems @samp{*-*-aix[34]*} shared libraries are disabled by default, since
+some versions of the native @command{ar} fail on the convenience libraries
+used.  A shared build can be attempted with
+
+@example
+./configure --enable-shared --disable-static
+@end example
+
+Note that the @samp{--disable-static} is necessary because in a shared build
+libtool makes @file{libgmp.a} a symlink to @file{libgmp.so}, apparently for
+the benefit of old versions of @command{ld} which only recognise @file{.a},
+but unfortunately this is done even if a fully functional @command{ld} is
+available.
+
+@item ARM
+@cindex ARM
+On systems @samp{arm*-*-*}, versions of GCC up to and including 2.95.3 have a
+bug in unsigned division, giving wrong results for some operands.  GMP
+@samp{./configure} will demand GCC 2.95.4 or later.
+
+@item Compaq C++
+@cindex Compaq C++
+Compaq C++ on OSF 5.1 has two flavours of @code{iostream}, a standard one and
+an old pre-standard one (see @samp{man iostream_intro}).  GMP can only use the
+standard one, which unfortunately is not the default but must be selected by
+defining @code{__USE_STD_IOSTREAM}.  Configure with for instance
+
+@example
+./configure --enable-cxx CPPFLAGS=-D__USE_STD_IOSTREAM
+@end example
+
+@item Floating Point Mode
+@cindex Floating point mode
+@cindex Hardware floating point mode
+@cindex Precision of hardware floating point
+@cindex x87
+On some systems, the hardware floating point has a control mode which can set
+all operations to be done in a particular precision, for instance single,
+double or extended on x86 systems (x87 floating point).  The GMP functions
+involving a @code{double} cannot be expected to operate to their full
+precision when the hardware is in single precision mode.  Of course this
+affects all code, including application code, not just GMP.
+
+@item FreeBSD 7.x, 8.x, 9.0, 9.1, 9.2
+@cindex FreeBSD
+@command{m4} in these releases of FreeBSD has an eval function which ignores
+its 2nd and 3rd arguments, which makes it unsuitable for @file{.asm} file
+processing.  @samp{./configure} will detect the problem and either abort or
+choose another m4 in the @env{PATH}.  The bug is fixed in FreeBSD 9.3 and 10.0,
+so either upgrade or use GNU m4.  Note that the FreeBSD package system installs
+GNU m4 under the name @samp{gm4}, which GMP cannot guess.
+
+@item FreeBSD 7.x, 8.x, 9.x
+@cindex FreeBSD
+GMP releases starting with 6.0 do not support @samp{ABI=32} on FreeBSD/amd64
+prior to release 10.0 of the system.  The cause is a broken @code{limits.h},
+which GMP no longer works around.
+
+@item MS-DOS and MS Windows
+@cindex MS-DOS
+@cindex MS Windows
+@cindex Windows
+@cindex Cygwin
+@cindex DJGPP
+@cindex MINGW
+On an MS-DOS system DJGPP can be used to build GMP, and on an MS Windows
+system Cygwin, DJGPP and MINGW can be used.  All three are excellent ports of
+GCC and the various GNU tools.
+
+@display
+@uref{http://www.cygwin.com/}
+@uref{http://www.delorie.com/djgpp/}
+@uref{http://www.mingw.org/}
+@end display
+
+@cindex Interix
+@cindex Services for Unix
+Microsoft also publishes an Interix ``Services for Unix'' which can be used to
+build GMP on Windows (with a normal @samp{./configure}), but it's not free
+software.
+
+@item MS Windows DLLs
+@cindex DLLs
+@cindex MS Windows
+@cindex Windows
+On systems @samp{*-*-cygwin*}, @samp{*-*-mingw*} and @samp{*-*-pw32*} by
+default GMP builds only a static library, but a DLL can be built instead using
+
+@example
+./configure --disable-static --enable-shared
+@end example
+
+Static and DLL libraries can't both be built, since certain export directives
+in @file{gmp.h} must be different.
+
+A MINGW DLL build of GMP can be used with Microsoft C@.  Libtool doesn't
+install a @file{.lib} format import library, but it can be created with MS
+@command{lib} as follows, and copied to the install directory.  Similarly for
+@file{libmp} and @file{libgmpxx}.
+
+@example
+cd .libs
+lib /def:libgmp-3.dll.def /out:libgmp-3.lib
+@end example
+
+MINGW uses the C runtime library @samp{msvcrt.dll} for I/O, so applications
+wanting to use the GMP I/O routines must be compiled with @samp{cl /MD} to do
+the same.  If one of the other C runtime library choices provided by MS C is
+desired then the suggestion is to use the GMP string functions and confine I/O
+to the application.
+
+@item Motorola 68k CPU Types
+@cindex 68000
+@samp{m68k} is taken to mean 68000.  @samp{m68020} or higher will give a
+performance boost on applicable CPUs.  @samp{m68360} can be used for CPU32
+series chips.  @samp{m68302} can be used for ``Dragonball'' series chips,
+though this is merely a synonym for @samp{m68000}.
+
+@item NetBSD 5.x
+@cindex NetBSD
+@command{m4} in these releases of NetBSD has an eval function which ignores its
+2nd and 3rd arguments, which makes it unsuitable for @file{.asm} file
+processing.  @samp{./configure} will detect the problem and either abort or
+choose another m4 in the @env{PATH}.  The bug is fixed in NetBSD 6, so either
+upgrade or use GNU m4.  Note that the NetBSD package system installs GNU m4
+under the name @samp{gm4}, which GMP cannot guess.
+
+@item OpenBSD 2.6
+@cindex OpenBSD
+@command{m4} in this release of OpenBSD has a bug in @code{eval} that makes it
+unsuitable for @file{.asm} file processing.  @samp{./configure} will detect
+the problem and either abort or choose another m4 in the @env{PATH}.  The bug
+is fixed in OpenBSD 2.7, so either upgrade or use GNU m4.
+
+@item Power CPU Types
+@cindex Power/PowerPC
+In GMP, CPU types @samp{power*} and @samp{powerpc*} will each use instructions
+not available on the other, so it's important to choose the right one for the
+CPU that will be used.  Currently GMP has no assembly code support for using
+just the common instruction subset.  To get executables that run on both, the
+current suggestion is to use the generic C code (@option{--disable-assembly}),
+possibly with appropriate compiler options (like @samp{-mcpu=common} for
+@command{gcc}).  CPU @samp{rs6000} (which is not a CPU but a family of
+workstations) is accepted by @file{config.sub}, but is currently equivalent to
+@option{--disable-assembly}.
+
+@item Sparc CPU Types
+@cindex Sparc
+@samp{sparcv8} or @samp{supersparc} on relevant systems will give a
+significant performance increase over the V7 code selected by plain
+@samp{sparc}.
+
+@item Sparc App Regs
+@cindex Sparc
+The GMP assembly code for both 32-bit and 64-bit Sparc clobbers the
+``application registers'' @code{g2}, @code{g3} and @code{g4}, the same way
+that the GCC default @samp{-mapp-regs} does (@pxref{SPARC Options,, SPARC
+Options, gcc, Using the GNU Compiler Collection (GCC)}).
+
+This makes that code unsuitable for use with the special V9
+@samp{-mcmodel=embmedany} (which uses @code{g4} as a data segment pointer), and
+for applications wanting to use those registers for special purposes.  In these
+cases the only suggestion currently is to build GMP with
+@option{--disable-assembly} to avoid the assembly code.
+
+@item SunOS 4
+@cindex SunOS
+@command{/usr/bin/m4} lacks various features needed to process @file{.asm}
+files, and instead @samp{./configure} will automatically use
+@command{/usr/5bin/m4}, which we believe is always available (if not then use
+GNU m4).
+
+@item x86 CPU Types
+@cindex x86
+@cindex 80x86
+@cindex i386
+@samp{i586}, @samp{pentium} or @samp{pentiummmx} code is good for its intended
+P5 Pentium chips, but quite slow when run on Intel P6 class chips (PPro, P-II,
+P-III)@.  @samp{i386} is a better choice when making binaries that must run on
+both.
+
+@item x86 MMX and SSE2 Code
+@cindex MMX
+@cindex SSE2
+If the CPU selected has MMX code but the assembler doesn't support it, a
+warning is given and non-MMX code is used instead.  This will be an inferior
+build, since the MMX code that's present is there because it's faster than the
+corresponding plain integer code.  The same applies to SSE2.
+
+Old versions of @samp{gas} don't support MMX instructions, in particular
+version 1.92.3 that comes with FreeBSD 2.2.8 or the more recent OpenBSD 3.1
+doesn't.
+
+Solaris 2.6 and 2.7 @command{as} generate incorrect object code for register
+to register @code{movq} instructions, and so can't be used for MMX code.
+Install a recent @command{gas} if MMX code is wanted on these systems.
+@end table
+
+
+@need 2000
+@node Known Build Problems, Performance optimization, Notes for Particular Systems, Installing GMP
+@section Known Build Problems
+@cindex Build problems known
+
+@c This section is more or less meant for known build problems that are not
+@c otherwise worked around and require some sort of manual intervention.
+
+You might find more up-to-date information at @uref{https://gmplib.org/}.
+
+@table @asis
+@item Compiler link options
+The version of libtool currently in use rather aggressively strips compiler
+options when linking a shared library.  This will hopefully be relaxed in the
+future, but for now if this is a problem the suggestion is to create a little
+script to hide them, and for instance configure with
+
+@example
+./configure CC=gcc-with-my-options
+@end example
+
+@item DJGPP (@samp{*-*-msdosdjgpp*})
+@cindex DJGPP
+The DJGPP port of @command{bash} 2.03 is unable to run the @samp{configure}
+script, it exits silently, having died writing a preamble to
+@file{config.log}.  Use @command{bash} 2.04 or higher.
+
+@samp{make all} was found to run out of memory during the final
+@file{libgmp.la} link on one system tested, despite having 64Mb available.
+Running @samp{make libgmp.la} directly helped, perhaps recursing into the
+various subdirectories uses up memory.
+
+@item GNU binutils @command{strip} prior to 2.12
+@cindex Stripped libraries
+@cindex Binutils @command{strip}
+@cindex GNU @command{strip}
+@command{strip} from GNU binutils 2.11 and earlier should not be used on the
+static libraries @file{libgmp.a} and @file{libmp.a} since it will discard all
+but the last of multiple archive members with the same name, like the three
+versions of @file{init.o} in @file{libgmp.a}.  Binutils 2.12 or higher can be
+used successfully.
+
+The shared libraries @file{libgmp.so} and @file{libmp.so} are not affected by
+this and any version of @command{strip} can be used on them.
+
+@item @command{make} syntax error
+@cindex SCO
+@cindex IRIX
+On certain versions of SCO OpenServer 5 and IRIX 6.5 the native @command{make}
+is unable to handle the long dependencies list for @file{libgmp.la}.  The
+symptom is a ``syntax error'' on the following line of the top-level
+@file{Makefile}.
+
+@example
+libgmp.la: $(libgmp_la_OBJECTS) $(libgmp_la_DEPENDENCIES)
+@end example
+
+Either use GNU Make, or as a workaround remove
+@code{$(libgmp_la_DEPENDENCIES)} from that line (which will make the initial
+build work, but if any recompiling is done @file{libgmp.la} might not be
+rebuilt).
+
+@item MacOS X (@samp{*-*-darwin*})
+@cindex MacOS X
+@cindex Darwin
+Libtool currently only knows how to create shared libraries on MacOS X using
+the native @command{cc} (which is a modified GCC), not a plain GCC@.  A
+static-only build should work though (@samp{--disable-shared}).
+
+@item NeXT prior to 3.3
+@cindex NeXT
+The system compiler on old versions of NeXT was a massacred and old GCC, even
+if it called itself @file{cc}.  This compiler cannot be used to build GMP, you
+need to get a real GCC, and install that.  (NeXT may have fixed this in
+release 3.3 of their system.)
+
+@item POWER and PowerPC
+@cindex Power/PowerPC
+Bugs in GCC 2.7.2 (and 2.6.3) mean it can't be used to compile GMP on POWER or
+PowerPC@.  If you want to use GCC for these machines, get GCC 2.7.2.1 (or
+later).
+
+@item Sequent Symmetry
+@cindex Sequent Symmetry
+Use the GNU assembler instead of the system assembler, since the latter has
+serious bugs.
+
+@item Solaris 2.6
+@cindex Solaris
+The system @command{sed} prints an error ``Output line too long'' when libtool
+builds @file{libgmp.la}.  This doesn't seem to cause any obvious ill effects,
+but GNU @command{sed} is recommended, to avoid any doubt.
+
+@item Sparc Solaris 2.7 with gcc 2.95.2 in @samp{ABI=32}
+@cindex Solaris
+A shared library build of GMP seems to fail in this combination, it builds but
+then fails the tests, apparently due to some incorrect data relocations within
+@code{gmp_randinit_lc_2exp_size}.  The exact cause is unknown,
+@samp{--disable-shared} is recommended.
+@end table
+
+
+@need 2000
+@node Performance optimization, , Known Build Problems, Installing GMP
+@section Performance optimization
+@cindex Optimizing performance
+
+@c At some point, this should perhaps move to a separate chapter on optimizing
+@c performance.
+
+For optimal performance, build GMP for the exact CPU type of the target
+computer, see @ref{Build Options}.
+
+Unlike what is the case for most other programs, the compiler typically
+doesn't matter much, since GMP uses assembly language for the most critical
+operation.
+
+In particular for long-running GMP applications, and applications demanding
+extremely large numbers, building and running the @code{tuneup} program in the
+@file{tune} subdirectory, can be important.  For example,
+
+@example
+cd tune
+make tuneup
+./tuneup
+@end example
+
+will generate better contents for the @file{gmp-mparam.h} parameter file.
+
+To use the results, put the output in the file indicated in the
+@samp{Parameters for ...} header.  Then recompile from scratch.
+
+The @code{tuneup} program takes one useful parameter, @samp{-f NNN}, which
+instructs the program how long to check FFT multiply parameters.  If you're
+going to use GMP for extremely large numbers, you may want to run @code{tuneup}
+with a large NNN value.
+
+
+@node GMP Basics, Reporting Bugs, Installing GMP, Top
+@comment  node-name,  next,  previous,  up
+@chapter GMP Basics
+@cindex Basics
+
+@strong{Using functions, macros, data types, etc.@: not documented in this
+manual is strongly discouraged.  If you do so your application is guaranteed
+to be incompatible with future versions of GMP.}
+
+@menu
+* Headers and Libraries::
+* Nomenclature and Types::
+* Function Classes::
+* Variable Conventions::
+* Parameter Conventions::
+* Memory Management::
+* Reentrancy::
+* Useful Macros and Constants::
+* Compatibility with older versions::
+* Demonstration Programs::
+* Efficiency::
+* Debugging::
+* Profiling::
+* Autoconf::
+* Emacs::
+@end menu
+
+@node Headers and Libraries, Nomenclature and Types, GMP Basics, GMP Basics
+@section Headers and Libraries
+@cindex Headers
+
+@cindex @file{gmp.h}
+@cindex Include files
+@cindex @code{#include}
+All declarations needed to use GMP are collected in the include file
+@file{gmp.h}.  It is designed to work with both C and C++ compilers.
+
+@example
+#include <gmp.h>
+@end example
+
+@cindex @code{stdio.h}
+Note however that prototypes for GMP functions with @code{FILE *} parameters
+are only provided if @code{<stdio.h>} is included too.
+
+@example
+#include <stdio.h>
+#include <gmp.h>
+@end example
+
+@cindex @code{stdarg.h}
+Likewise @code{<stdarg.h>} is required for prototypes with @code{va_list}
+parameters, such as @code{gmp_vprintf}.  And @code{<obstack.h>} for prototypes
+with @code{struct obstack} parameters, such as @code{gmp_obstack_printf}, when
+available.
+
+@cindex Libraries
+@cindex Linking
+@cindex @code{libgmp}
+All programs using GMP must link against the @file{libgmp} library.  On a
+typical Unix-like system this can be done with @samp{-lgmp}, for example
+
+@example
+gcc myprogram.c -lgmp
+@end example
+
+@cindex @code{libgmpxx}
+GMP C++ functions are in a separate @file{libgmpxx} library.  This is built
+and installed if C++ support has been enabled (@pxref{Build Options}).  For
+example,
+
+@example
+g++ mycxxprog.cc -lgmpxx -lgmp
+@end example
+
+@cindex Libtool
+GMP is built using Libtool and an application can use that to link if desired,
+@GMPpxreftop{libtool, GNU Libtool}.
+
+If GMP has been installed to a non-standard location then it may be necessary
+to use @samp{-I} and @samp{-L} compiler options to point to the right
+directories, and some sort of run-time path for a shared library.
+
+
+@node Nomenclature and Types, Function Classes, Headers and Libraries, GMP Basics
+@section Nomenclature and Types
+@cindex Nomenclature
+@cindex Types
+
+@cindex Integer
+@tindex @code{mpz_t}
+In this manual, @dfn{integer} usually means a multiple precision integer, as
+defined by the GMP library.  The C data type for such integers is @code{mpz_t}.
+Here are some examples of how to declare such integers:
+
+@example
+mpz_t sum;
+
+struct foo @{ mpz_t x, y; @};
+
+mpz_t vec[20];
+@end example
+
+@cindex Rational number
+@tindex @code{mpq_t}
+@dfn{Rational number} means a multiple precision fraction.  The C data type
+for these fractions is @code{mpq_t}.  For example:
+
+@example
+mpq_t quotient;
+@end example
+
+@cindex Floating-point number
+@tindex @code{mpf_t}
+@dfn{Floating point number} or @dfn{Float} for short, is an arbitrary precision
+mantissa with a limited precision exponent.  The C data type for such objects
+is @code{mpf_t}.  For example:
+
+@example
+mpf_t fp;
+@end example
+
+@tindex @code{mp_exp_t}
+The floating point functions accept and return exponents in the C type
+@code{mp_exp_t}.  Currently this is usually a @code{long}, but on some systems
+it's an @code{int} for efficiency.
+
+@cindex Limb
+@tindex @code{mp_limb_t}
+A @dfn{limb} means the part of a multi-precision number that fits in a single
+machine word.  (We chose this word because a limb of the human body is
+analogous to a digit, only larger, and containing several digits.)  Normally a
+limb is 32 or 64 bits.  The C data type for a limb is @code{mp_limb_t}.
+
+@tindex @code{mp_size_t}
+Counts of limbs of a multi-precision number represented in the C type
+@code{mp_size_t}.  Currently this is normally a @code{long}, but on some
+systems it's an @code{int} for efficiency, and on some systems it will be
+@code{long long} in the future.
+
+@tindex @code{mp_bitcnt_t}
+Counts of bits of a multi-precision number are represented in the C type
+@code{mp_bitcnt_t}.  Currently this is always an @code{unsigned long}, but on
+some systems it will be an @code{unsigned long long} in the future.
+
+@cindex Random state
+@tindex @code{gmp_randstate_t}
+@dfn{Random state} means an algorithm selection and current state data.  The C
+data type for such objects is @code{gmp_randstate_t}.  For example:
+
+@example
+gmp_randstate_t rstate;
+@end example
+
+Also, in general @code{mp_bitcnt_t} is used for bit counts and ranges, and
+@code{size_t} is used for byte or character counts.
+
+
+@node Function Classes, Variable Conventions, Nomenclature and Types, GMP Basics
+@section Function Classes
+@cindex Function classes
+
+There are six classes of functions in the GMP library:
+
+@enumerate
+@item
+Functions for signed integer arithmetic, with names beginning with
+@code{mpz_}.  The associated type is @code{mpz_t}.  There are about 150
+functions in this class.  (@pxref{Integer Functions})
+
+@item
+Functions for rational number arithmetic, with names beginning with
+@code{mpq_}.  The associated type is @code{mpq_t}.  There are about 35
+functions in this class, but the integer functions can be used for arithmetic
+on the numerator and denominator separately.  (@pxref{Rational Number
+Functions})
+
+@item
+Functions for floating-point arithmetic, with names beginning with
+@code{mpf_}.  The associated type is @code{mpf_t}.  There are about 70
+functions is this class.  (@pxref{Floating-point Functions})
+
+@item
+Fast low-level functions that operate on natural numbers.  These are used by
+the functions in the preceding groups, and you can also call them directly
+from very time-critical user programs.  These functions' names begin with
+@code{mpn_}.  The associated type is array of @code{mp_limb_t}.  There are
+about 60 (hard-to-use) functions in this class.  (@pxref{Low-level Functions})
+
+@item
+Miscellaneous functions.  Functions for setting up custom allocation and
+functions for generating random numbers.  (@pxref{Custom Allocation}, and
+@pxref{Random Number Functions})
+@end enumerate
+
+
+@node Variable Conventions, Parameter Conventions, Function Classes, GMP Basics
+@section Variable Conventions
+@cindex Variable conventions
+@cindex Conventions for variables
+
+GMP functions generally have output arguments before input arguments.  This
+notation is by analogy with the assignment operator.  The BSD MP compatibility
+functions are exceptions, having the output arguments last.
+
+GMP lets you use the same variable for both input and output in one call.  For
+example, the main function for integer multiplication, @code{mpz_mul}, can be
+used to square @code{x} and put the result back in @code{x} with
+
+@example
+mpz_mul (x, x, x);
+@end example
+
+Before you can assign to a GMP variable, you need to initialize it by calling
+one of the special initialization functions.  When you're done with a
+variable, you need to clear it out, using one of the functions for that
+purpose.  Which function to use depends on the type of variable.  See the
+chapters on integer functions, rational number functions, and floating-point
+functions for details.
+
+A variable should only be initialized once, or at least cleared between each
+initialization.  After a variable has been initialized, it may be assigned to
+any number of times.
+
+For efficiency reasons, avoid excessive initializing and clearing.  In
+general, initialize near the start of a function and clear near the end.  For
+example,
+
+@example
+void
+foo (void)
+@{
+  mpz_t  n;
+  int    i;
+  mpz_init (n);
+  for (i = 1; i < 100; i++)
+    @{
+      mpz_mul (n, @dots{});
+      mpz_fdiv_q (n, @dots{});
+      @dots{}
+    @}
+  mpz_clear (n);
+@}
+@end example
+
+
+@node Parameter Conventions, Memory Management, Variable Conventions, GMP Basics
+@section Parameter Conventions
+@cindex Parameter conventions
+@cindex Conventions for parameters
+
+When a GMP variable is used as a function parameter, it's effectively a
+call-by-reference, meaning if the function stores a value there it will change
+the original in the caller.  Parameters which are input-only can be designated
+@code{const} to provoke a compiler error or warning on attempting to modify
+them.
+
+When a function is going to return a GMP result, it should designate a
+parameter that it sets, like the library functions do.  More than one value
+can be returned by having more than one output parameter, again like the
+library functions.  A @code{return} of an @code{mpz_t} etc doesn't return the
+object, only a pointer, and this is almost certainly not what's wanted.
+
+Here's an example accepting an @code{mpz_t} parameter, doing a calculation,
+and storing the result to the indicated parameter.
+
+@example
+void
+foo (mpz_t result, const mpz_t param, unsigned long n)
+@{
+  unsigned long  i;
+  mpz_mul_ui (result, param, n);
+  for (i = 1; i < n; i++)
+    mpz_add_ui (result, result, i*7);
+@}
+
+int
+main (void)
+@{
+  mpz_t  r, n;
+  mpz_init (r);
+  mpz_init_set_str (n, "123456", 0);
+  foo (r, n, 20L);
+  gmp_printf ("%Zd\n", r);
+  return 0;
+@}
+@end example
+
+@code{foo} works even if the mainline passes the same variable for
+@code{param} and @code{result}, just like the library functions.  But
+sometimes it's tricky to make that work, and an application might not want to
+bother supporting that sort of thing.
+
+For interest, the GMP types @code{mpz_t} etc are implemented as one-element
+arrays of certain structures.  This is why declaring a variable creates an
+object with the fields GMP needs, but then using it as a parameter passes a
+pointer to the object.  Note that the actual fields in each @code{mpz_t} etc
+are for internal use only and should not be accessed directly by code that
+expects to be compatible with future GMP releases.
+
+
+@need 1000
+@node Memory Management, Reentrancy, Parameter Conventions, GMP Basics
+@section Memory Management
+@cindex Memory management
+
+The GMP types like @code{mpz_t} are small, containing only a couple of sizes,
+and pointers to allocated data.  Once a variable is initialized, GMP takes
+care of all space allocation.  Additional space is allocated whenever a
+variable doesn't have enough.
+
+@code{mpz_t} and @code{mpq_t} variables never reduce their allocated space.
+Normally this is the best policy, since it avoids frequent reallocation.
+Applications that need to return memory to the heap at some particular point
+can use @code{mpz_realloc2}, or clear variables no longer needed.
+
+@code{mpf_t} variables, in the current implementation, use a fixed amount of
+space, determined by the chosen precision and allocated at initialization, so
+their size doesn't change.
+
+All memory is allocated using @code{malloc} and friends by default, but this
+can be changed, see @ref{Custom Allocation}.  Temporary memory on the stack is
+also used (via @code{alloca}), but this can be changed at build-time if
+desired, see @ref{Build Options}.
+
+
+@node Reentrancy, Useful Macros and Constants, Memory Management, GMP Basics
+@section Reentrancy
+@cindex Reentrancy
+@cindex Thread safety
+@cindex Multi-threading
+
+@noindent
+GMP is reentrant and thread-safe, with some exceptions:
+
+@itemize @bullet
+@item
+If configured with @option{--enable-alloca=malloc-notreentrant} (or with
+@option{--enable-alloca=notreentrant} when @code{alloca} is not available),
+then naturally GMP is not reentrant.
+
+@item
+@code{mpf_set_default_prec} and @code{mpf_init} use a global variable for the
+selected precision.  @code{mpf_init2} can be used instead, and in the C++
+interface an explicit precision to the @code{mpf_class} constructor.
+
+@item
+@code{mpz_random} and the other old random number functions use a global
+random state and are hence not reentrant.  The newer random number functions
+that accept a @code{gmp_randstate_t} parameter can be used instead.
+
+@item
+@code{gmp_randinit} (obsolete) returns an error indication through a global
+variable, which is not thread safe.  Applications are advised to use
+@code{gmp_randinit_default} or @code{gmp_randinit_lc_2exp} instead.
+
+@item
+@code{mp_set_memory_functions} uses global variables to store the selected
+memory allocation functions.
+
+@item
+If the memory allocation functions set by a call to
+@code{mp_set_memory_functions} (or @code{malloc} and friends by default) are
+not reentrant, then GMP will not be reentrant either.
+
+@item
+If the standard I/O functions such as @code{fwrite} are not reentrant then the
+GMP I/O functions using them will not be reentrant either.
+
+@item
+It's safe for two threads to read from the same GMP variable simultaneously,
+but it's not safe for one to read while another might be writing, nor for
+two threads to write simultaneously.  It's not safe for two threads to
+generate a random number from the same @code{gmp_randstate_t} simultaneously,
+since this involves an update of that variable.
+@end itemize
+
+
+@need 2000
+@node Useful Macros and Constants, Compatibility with older versions, Reentrancy, GMP Basics
+@section Useful Macros and Constants
+@cindex Useful macros and constants
+@cindex Constants
+
+@deftypevr {Global Constant} {const int} mp_bits_per_limb
+@findex mp_bits_per_limb
+@cindex Bits per limb
+@cindex Limb size
+The number of bits per limb.
+@end deftypevr
+
+@defmac __GNU_MP_VERSION
+@defmacx __GNU_MP_VERSION_MINOR
+@defmacx __GNU_MP_VERSION_PATCHLEVEL
+@cindex Version number
+@cindex GMP version number
+The major and minor GMP version, and patch level, respectively, as integers.
+For GMP i.j, these numbers will be i, j, and 0, respectively.
+For GMP i.j.k, these numbers will be i, j, and k, respectively.
+@end defmac
+
+@deftypevr {Global Constant} {const char * const} gmp_version
+@findex gmp_version
+The GMP version number, as a null-terminated string, in the form ``i.j.k''.
+This release is @nicode{"@value{VERSION}"}.  Note that the format ``i.j'' was
+used, before version 4.3.0, when k was zero.
+@end deftypevr
+
+@defmac __GMP_CC
+@defmacx __GMP_CFLAGS
+The compiler and compiler flags, respectively, used when compiling GMP, as
+strings.
+@end defmac
+
+
+@node Compatibility with older versions, Demonstration Programs, Useful Macros and Constants, GMP Basics
+@section Compatibility with older versions
+@cindex Compatibility with older versions
+@cindex Past GMP versions
+@cindex Upward compatibility
+
+This version of GMP is upwardly binary compatible with all 5.x, 4.x, and 3.x
+versions, and upwardly compatible at the source level with all 2.x versions,
+with the following exceptions.
+
+@itemize @bullet
+@item
+@code{mpn_gcd} had its source arguments swapped as of GMP 3.0, for consistency
+with other @code{mpn} functions.
+
+@item
+@code{mpf_get_prec} counted precision slightly differently in GMP 3.0 and
+3.0.1, but in 3.1 reverted to the 2.x style.
+
+@item
+@code{mpn_bdivmod}, documented as preliminary in GMP 4, has been removed.
+@end itemize
+
+There are a number of compatibility issues between GMP 1 and GMP 2 that of
+course also apply when porting applications from GMP 1 to GMP 5.  Please
+see the GMP 2 manual for details.
+
+@c @item Integer division functions round the result differently.  The obsolete
+@c functions (@code{mpz_div}, @code{mpz_divmod}, @code{mpz_mdiv},
+@c @code{mpz_mdivmod}, etc) now all use floor rounding (i.e., they round the
+@c quotient towards
+@c @ifinfo
+@c @minus{}infinity).
+@c @end ifinfo
+@c @iftex
+@c @tex
+@c $-\infty$).
+@c @end tex
+@c @end iftex
+@c There are a lot of functions for integer division, giving the user better
+@c control over the rounding.
+
+@c @item The function @code{mpz_mod} now compute the true @strong{mod} function.
+
+@c @item The functions @code{mpz_powm} and @code{mpz_powm_ui} now use
+@c @strong{mod} for reduction.
+
+@c @item The assignment functions for rational numbers do no longer canonicalize
+@c their results.  In the case a non-canonical result could arise from an
+@c assignment, the user need to insert an explicit call to
+@c @code{mpq_canonicalize}.  This change was made for efficiency.
+
+@c @item Output generated by @code{mpz_out_raw} in this release cannot be read
+@c by @code{mpz_inp_raw} in previous releases.  This change was made for making
+@c the file format truly portable between machines with different word sizes.
+
+@c @item Several @code{mpn} functions have changed.  But they were intentionally
+@c undocumented in previous releases.
+
+@c @item The functions @code{mpz_cmp_ui}, @code{mpz_cmp_si}, and @code{mpq_cmp_ui}
+@c are now implemented as macros, and thereby sometimes evaluate their
+@c arguments multiple times.
+
+@c @item The functions @code{mpz_pow_ui} and @code{mpz_ui_pow_ui} now yield 1
+@c for 0^0.  (In version 1, they yielded 0.)
+
+@c In version 1 of the library, @code{mpq_set_den} handled negative
+@c denominators by copying the sign to the numerator.  That is no longer done.
+
+@c Pure assignment functions do not canonicalize the assigned variable.  It is
+@c the responsibility of the user to canonicalize the assigned variable before
+@c any arithmetic operations are performed on that variable.
+@c Note that this is an incompatible change from version 1 of the library.
+
+@c @end enumerate
+
+
+@need 1000
+@node Demonstration Programs, Efficiency, Compatibility with older versions, GMP Basics
+@section Demonstration programs
+@cindex Demonstration programs
+@cindex Example programs
+@cindex Sample programs
+The @file{demos} subdirectory has some sample programs using GMP@.  These
+aren't built or installed, but there's a @file{Makefile} with rules for them.
+For instance,
+
+@example
+make pexpr
+./pexpr 68^975+10
+@end example
+
+@noindent
+The following programs are provided
+
+@itemize @bullet
+@item
+@cindex Expression parsing demo
+@cindex Parsing expressions demo
+@samp{pexpr} is an expression evaluator, the program used on the GMP web page.
+@item
+@cindex Expression parsing demo
+@cindex Parsing expressions demo
+The @samp{calc} subdirectory has a similar but simpler evaluator using
+@command{lex} and @command{yacc}.
+@item
+@cindex Expression parsing demo
+@cindex Parsing expressions demo
+The @samp{expr} subdirectory is yet another expression evaluator, a library
+designed for ease of use within a C program.  See @file{demos/expr/README} for
+more information.
+@item
+@cindex Factorization demo
+@samp{factorize} is a Pollard-Rho factorization program.
+@item
+@samp{isprime} is a command-line interface to the @code{mpz_probab_prime_p}
+function.
+@item
+@samp{primes} counts or lists primes in an interval, using a sieve.
+@item
+@samp{qcn} is an example use of @code{mpz_kronecker_ui} to estimate quadratic
+class numbers.
+@item
+@cindex @code{perl}
+@cindex GMP Perl module
+@cindex Perl module
+The @samp{perl} subdirectory is a comprehensive perl interface to GMP@.  See
+@file{demos/perl/INSTALL} for more information.  Documentation is in POD
+format in @file{demos/perl/GMP.pm}.
+@end itemize
+
+As an aside, consideration has been given at various times to some sort of
+expression evaluation within the main GMP library.  Going beyond something
+minimal quickly leads to matters like user-defined functions, looping, fixnums
+for control variables, etc, which are considered outside the scope of GMP
+(much closer to language interpreters or compilers, @xref{Language Bindings}.)
+Something simple for program input convenience may yet be a possibility, a
+combination of the @file{expr} demo and the @file{pexpr} tree back-end
+perhaps.  But for now the above evaluators are offered as illustrations.
+
+
+@need 1000
+@node Efficiency, Debugging, Demonstration Programs, GMP Basics
+@section Efficiency
+@cindex Efficiency
+
+@table @asis
+@item Small Operands
+@cindex Small operands
+On small operands, the time for function call overheads and memory allocation
+can be significant in comparison to actual calculation.  This is unavoidable
+in a general purpose variable precision library, although GMP attempts to be
+as efficient as it can on both large and small operands.
+
+@item Static Linking
+@cindex Static linking
+On some CPUs, in particular the x86s, the static @file{libgmp.a} should be
+used for maximum speed, since the PIC code in the shared @file{libgmp.so} will
+have a small overhead on each function call and global data address.  For many
+programs this will be insignificant, but for long calculations there's a gain
+to be had.
+
+@item Initializing and Clearing
+@cindex Initializing and clearing
+Avoid excessive initializing and clearing of variables, since this can be
+quite time consuming, especially in comparison to otherwise fast operations
+like addition.
+
+A language interpreter might want to keep a free list or stack of
+initialized variables ready for use.  It should be possible to integrate
+something like that with a garbage collector too.
+
+@item Reallocations
+@cindex Reallocations
+An @code{mpz_t} or @code{mpq_t} variable used to hold successively increasing
+values will have its memory repeatedly @code{realloc}ed, which could be quite
+slow or could fragment memory, depending on the C library.  If an application
+can estimate the final size then @code{mpz_init2} or @code{mpz_realloc2} can
+be called to allocate the necessary space from the beginning
+(@pxref{Initializing Integers}).
+
+It doesn't matter if a size set with @code{mpz_init2} or @code{mpz_realloc2}
+is too small, since all functions will do a further reallocation if necessary.
+Badly overestimating memory required will waste space though.
+
+@item @code{2exp} Functions
+@cindex @code{2exp} functions
+It's up to an application to call functions like @code{mpz_mul_2exp} when
+appropriate.  General purpose functions like @code{mpz_mul} make no attempt to
+identify powers of two or other special forms, because such inputs will
+usually be very rare and testing every time would be wasteful.
+
+@item @code{ui} and @code{si} Functions
+@cindex @code{ui} and @code{si} functions
+The @code{ui} functions and the small number of @code{si} functions exist for
+convenience and should be used where applicable.  But if for example an
+@code{mpz_t} contains a value that fits in an @code{unsigned long} there's no
+need extract it and call a @code{ui} function, just use the regular @code{mpz}
+function.
+
+@item In-Place Operations
+@cindex In-place operations
+@code{mpz_abs}, @code{mpq_abs}, @code{mpf_abs}, @code{mpz_neg}, @code{mpq_neg}
+and @code{mpf_neg} are fast when used for in-place operations like
+@code{mpz_abs(x,x)}, since in the current implementation only a single field
+of @code{x} needs changing.  On suitable compilers (GCC for instance) this is
+inlined too.
+
+@code{mpz_add_ui}, @code{mpz_sub_ui}, @code{mpf_add_ui} and @code{mpf_sub_ui}
+benefit from an in-place operation like @code{mpz_add_ui(x,x,y)}, since
+usually only one or two limbs of @code{x} will need to be changed.  The same
+applies to the full precision @code{mpz_add} etc if @code{y} is small.  If
+@code{y} is big then cache locality may be helped, but that's all.
+
+@code{mpz_mul} is currently the opposite, a separate destination is slightly
+better.  A call like @code{mpz_mul(x,x,y)} will, unless @code{y} is only one
+limb, make a temporary copy of @code{x} before forming the result.  Normally
+that copying will only be a tiny fraction of the time for the multiply, so
+this is not a particularly important consideration.
+
+@code{mpz_set}, @code{mpq_set}, @code{mpq_set_num}, @code{mpf_set}, etc, make
+no attempt to recognise a copy of something to itself, so a call like
+@code{mpz_set(x,x)} will be wasteful.  Naturally that would never be written
+deliberately, but if it might arise from two pointers to the same object then
+a test to avoid it might be desirable.
+
+@example
+if (x != y)
+  mpz_set (x, y);
+@end example
+
+Note that it's never worth introducing extra @code{mpz_set} calls just to get
+in-place operations.  If a result should go to a particular variable then just
+direct it there and let GMP take care of data movement.
+
+@item Divisibility Testing (Small Integers)
+@cindex Divisibility testing
+@code{mpz_divisible_ui_p} and @code{mpz_congruent_ui_p} are the best functions
+for testing whether an @code{mpz_t} is divisible by an individual small
+integer.  They use an algorithm which is faster than @code{mpz_tdiv_ui}, but
+which gives no useful information about the actual remainder, only whether
+it's zero (or a particular value).
+
+However when testing divisibility by several small integers, it's best to take
+a remainder modulo their product, to save multi-precision operations.  For
+instance to test whether a number is divisible by any of 23, 29 or 31 take a
+remainder modulo @math{23@times{}29@times{}31 = 20677} and then test that.
+
+The division functions like @code{mpz_tdiv_q_ui} which give a quotient as well
+as a remainder are generally a little slower than the remainder-only functions
+like @code{mpz_tdiv_ui}.  If the quotient is only rarely wanted then it's
+probably best to just take a remainder and then go back and calculate the
+quotient if and when it's wanted (@code{mpz_divexact_ui} can be used if the
+remainder is zero).
+
+@item Rational Arithmetic
+@cindex Rational arithmetic
+The @code{mpq} functions operate on @code{mpq_t} values with no common factors
+in the numerator and denominator.  Common factors are checked-for and cast out
+as necessary.  In general, cancelling factors every time is the best approach
+since it minimizes the sizes for subsequent operations.
+
+However, applications that know something about the factorization of the
+values they're working with might be able to avoid some of the GCDs used for
+canonicalization, or swap them for divisions.  For example when multiplying by
+a prime it's enough to check for factors of it in the denominator instead of
+doing a full GCD@.  Or when forming a big product it might be known that very
+little cancellation will be possible, and so canonicalization can be left to
+the end.
+
+The @code{mpq_numref} and @code{mpq_denref} macros give access to the
+numerator and denominator to do things outside the scope of the supplied
+@code{mpq} functions.  @xref{Applying Integer Functions}.
+
+The canonical form for rationals allows mixed-type @code{mpq_t} and integer
+additions or subtractions to be done directly with multiples of the
+denominator.  This will be somewhat faster than @code{mpq_add}.  For example,
+
+@example
+/* mpq increment */
+mpz_add (mpq_numref(q), mpq_numref(q), mpq_denref(q));
+
+/* mpq += unsigned long */
+mpz_addmul_ui (mpq_numref(q), mpq_denref(q), 123UL);
+
+/* mpq -= mpz */
+mpz_submul (mpq_numref(q), mpq_denref(q), z);
+@end example
+
+@item Number Sequences
+@cindex Number sequences
+Functions like @code{mpz_fac_ui}, @code{mpz_fib_ui} and @code{mpz_bin_uiui}
+are designed for calculating isolated values.  If a range of values is wanted
+it's probably best to call to get a starting point and iterate from there.
+
+@item Text Input/Output
+@cindex Text input/output
+Hexadecimal or octal are suggested for input or output in text form.
+Power-of-2 bases like these can be converted much more efficiently than other
+bases, like decimal.  For big numbers there's usually nothing of particular
+interest to be seen in the digits, so the base doesn't matter much.
+
+Maybe we can hope octal will one day become the normal base for everyday use,
+as proposed by King Charles XII of Sweden and later reformers.
+@c Reference: Knuth volume 2 section 4.1, page 184 of second edition.  :-)
+@end table
+
+
+@node Debugging, Profiling, Efficiency, GMP Basics
+@section Debugging
+@cindex Debugging
+
+@table @asis
+@item Stack Overflow
+@cindex Stack overflow
+@cindex Segmentation violation
+@cindex Bus error
+Depending on the system, a segmentation violation or bus error might be the
+only indication of stack overflow.  See @samp{--enable-alloca} choices in
+@ref{Build Options}, for how to address this.
+
+In new enough versions of GCC, @samp{-fstack-check} may be able to ensure an
+overflow is recognised by the system before too much damage is done, or
+@samp{-fstack-limit-symbol} or @samp{-fstack-limit-register} may be able to
+add checking if the system itself doesn't do any (@pxref{Code Gen Options,,
+Options for Code Generation, gcc, Using the GNU Compiler Collection (GCC)}).
+These options must be added to the @samp{CFLAGS} used in the GMP build
+(@pxref{Build Options}), adding them just to an application will have no
+effect.  Note also they're a slowdown, adding overhead to each function call
+and each stack allocation.
+
+@item Heap Problems
+@cindex Heap problems
+@cindex Malloc problems
+The most likely cause of application problems with GMP is heap corruption.
+Failing to @code{init} GMP variables will have unpredictable effects, and
+corruption arising elsewhere in a program may well affect GMP@.  Initializing
+GMP variables more than once or failing to clear them will cause memory leaks.
+
+@cindex Malloc debugger
+In all such cases a @code{malloc} debugger is recommended.  On a GNU or BSD
+system the standard C library @code{malloc} has some diagnostic facilities,
+see @ref{Allocation Debugging,, Allocation Debugging, libc, The GNU C Library
+Reference Manual}, or @samp{man 3 malloc}.  Other possibilities, in no
+particular order, include
+
+@display
+@uref{http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/}
+@uref{http://dmalloc.com/}
+@uref{http://www.perens.com/FreeSoftware/} @ (electric fence)
+@uref{http://packages.debian.org/stable/devel/fda}
+@uref{http://www.gnupdate.org/components/leakbug/}
+@uref{http://people.redhat.com/~otaylor/memprof/}
+@uref{http://www.cbmamiga.demon.co.uk/mpatrol/}
+@end display
+
+The GMP default allocation routines in @file{memory.c} also have a simple
+sentinel scheme which can be enabled with @code{#define DEBUG} in that file.
+This is mainly designed for detecting buffer overruns during GMP development,
+but might find other uses.
+
+@item Stack Backtraces
+@cindex Stack backtrace
+On some systems the compiler options GMP uses by default can interfere with
+debugging.  In particular on x86 and 68k systems @samp{-fomit-frame-pointer}
+is used and this generally inhibits stack backtracing.  Recompiling without
+such options may help while debugging, though the usual caveats about it
+potentially moving a memory problem or hiding a compiler bug will apply.
+
+@item GDB, the GNU Debugger
+@cindex GDB
+@cindex GNU Debugger
+A sample @file{.gdbinit} is included in the distribution, showing how to call
+some undocumented dump functions to print GMP variables from within GDB@.  Note
+that these functions shouldn't be used in final application code since they're
+undocumented and may be subject to incompatible changes in future versions of
+GMP.
+
+@item Source File Paths
+GMP has multiple source files with the same name, in different directories.
+For example @file{mpz}, @file{mpq} and @file{mpf} each have an
+@file{init.c}.  If the debugger can't already determine the right one it may
+help to build with absolute paths on each C file.  One way to do that is to
+use a separate object directory with an absolute path to the source directory.
+
+@example
+cd /my/build/dir
+/my/source/dir/gmp-@value{VERSION}/configure
+@end example
+
+This works via @code{VPATH}, and might require GNU @command{make}.
+Alternately it might be possible to change the @code{.c.lo} rules
+appropriately.
+
+@item Assertion Checking
+@cindex Assertion checking
+The build option @option{--enable-assert} is available to add some consistency
+checks to the library (see @ref{Build Options}).  These are likely to be of
+limited value to most applications.  Assertion failures are just as likely to
+indicate memory corruption as a library or compiler bug.
+
+Applications using the low-level @code{mpn} functions, however, will benefit
+from @option{--enable-assert} since it adds checks on the parameters of most
+such functions, many of which have subtle restrictions on their usage.  Note
+however that only the generic C code has checks, not the assembly code, so
+@option{--disable-assembly} should be used for maximum checking.
+
+@item Temporary Memory Checking
+The build option @option{--enable-alloca=debug} arranges that each block of
+temporary memory in GMP is allocated with a separate call to @code{malloc} (or
+the allocation function set with @code{mp_set_memory_functions}).
+
+This can help a malloc debugger detect accesses outside the intended bounds,
+or detect memory not released.  In a normal build, on the other hand,
+temporary memory is allocated in blocks which GMP divides up for its own use,
+or may be allocated with a compiler builtin @code{alloca} which will go
+nowhere near any malloc debugger hooks.
+
+@item Maximum Debuggability
+To summarize the above, a GMP build for maximum debuggability would be
+
+@example
+./configure --disable-shared --enable-assert \
+  --enable-alloca=debug --disable-assembly CFLAGS=-g
+@end example
+
+For C++, add @samp{--enable-cxx CXXFLAGS=-g}.
+
+@item Checker
+@cindex Checker
+@cindex GCC Checker
+The GCC checker (@uref{https://savannah.nongnu.org/projects/checker/}) can be
+used with GMP@.  It contains a stub library which means GMP applications
+compiled with checker can use a normal GMP build.
+
+A build of GMP with checking within GMP itself can be made.  This will run
+very very slowly.  On GNU/Linux for example,
+
+@cindex @command{checkergcc}
+@example
+./configure --disable-assembly CC=checkergcc
+@end example
+
+@option{--disable-assembly} must be used, since the GMP assembly code doesn't
+support the checking scheme.  The GMP C++ features cannot be used, since
+current versions of checker (0.9.9.1) don't yet support the standard C++
+library.
+
+@item Valgrind
+@cindex Valgrind
+Valgrind (@uref{http://valgrind.org/}) is a memory checker for x86, ARM, MIPS,
+PowerPC, and S/390.  It translates and emulates machine instructions to do
+strong checks for uninitialized data (at the level of individual bits), memory
+accesses through bad pointers, and memory leaks.
+
+Valgrind does not always support every possible instruction, in particular
+ones recently added to an ISA.  Valgrind might therefore be incompatible with
+a recent GMP or even a less recent GMP which is compiled using a recent GCC.
+
+GMP's assembly code sometimes promotes a read of the limbs to some larger size,
+for efficiency.  GMP will do this even at the start and end of a multilimb
+operand, using naturally aligned operations on the larger type.  This may lead
+to benign reads outside of allocated areas, triggering complaints from
+Valgrind.  Valgrind's option @samp{--partial-loads-ok=yes} should help.
+
+@item Other Problems
+Any suspected bug in GMP itself should be isolated to make sure it's not an
+application problem, see @ref{Reporting Bugs}.
+@end table
+
+
+@node Profiling, Autoconf, Debugging, GMP Basics
+@section Profiling
+@cindex Profiling
+@cindex Execution profiling
+@cindex @code{--enable-profiling}
+
+Running a program under a profiler is a good way to find where it's spending
+most time and where improvements can be best sought.  The profiling choices
+for a GMP build are as follows.
+
+@table @asis
+@item @samp{--disable-profiling}
+The default is to add nothing special for profiling.
+
+It should be possible to just compile the mainline of a program with @code{-p}
+and use @command{prof} to get a profile consisting of timer-based sampling of
+the program counter.  Most of the GMP assembly code has the necessary symbol
+information.
+
+This approach has the advantage of minimizing interference with normal program
+operation, but on most systems the resolution of the sampling is quite low (10
+milliseconds for instance), requiring long runs to get accurate information.
+
+@item @samp{--enable-profiling=prof}
+@cindex @code{prof}
+Build with support for the system @command{prof}, which means @samp{-p} added
+to the @samp{CFLAGS}.
+
+This provides call counting in addition to program counter sampling, which
+allows the most frequently called routines to be identified, and an average
+time spent in each routine to be determined.
+
+The x86 assembly code has support for this option, but on other processors
+the assembly routines will be as if compiled without @samp{-p} and therefore
+won't appear in the call counts.
+
+On some systems, such as GNU/Linux, @samp{-p} in fact means @samp{-pg} and in
+this case @samp{--enable-profiling=gprof} described below should be used
+instead.
+
+@item @samp{--enable-profiling=gprof}
+@cindex @code{gprof}
+Build with support for @command{gprof}, which means @samp{-pg} added to the
+@samp{CFLAGS}.
+
+This provides call graph construction in addition to call counting and program
+counter sampling, which makes it possible to count calls coming from different
+locations.  For example the number of calls to @code{mpn_mul} from
+@code{mpz_mul} versus the number from @code{mpf_mul}.  The program counter
+sampling is still flat though, so only a total time in @code{mpn_mul} would be
+accumulated, not a separate amount for each call site.
+
+The x86 assembly code has support for this option, but on other processors
+the assembly routines will be as if compiled without @samp{-pg} and therefore
+not be included in the call counts.
+
+On x86 and m68k systems @samp{-pg} and @samp{-fomit-frame-pointer} are
+incompatible, so the latter is omitted from the default flags in that case,
+which might result in poorer code generation.
+
+Incidentally, it should be possible to use the @command{gprof} program with a
+plain @samp{--enable-profiling=prof} build.  But in that case only the
+@samp{gprof -p} flat profile and call counts can be expected to be valid, not
+the @samp{gprof -q} call graph.
+
+@item @samp{--enable-profiling=instrument}
+@cindex @code{-finstrument-functions}
+@cindex @code{instrument-functions}
+Build with the GCC option @samp{-finstrument-functions} added to the
+@samp{CFLAGS} (@pxref{Code Gen Options,, Options for Code Generation, gcc,
+Using the GNU Compiler Collection (GCC)}).
+
+This inserts special instrumenting calls at the start and end of each
+function, allowing exact timing and full call graph construction.
+
+This instrumenting is not normally a standard system feature and will require
+support from an external library, such as
+
+@cindex FunctionCheck
+@cindex fnccheck
+@display
+@uref{http://sourceforge.net/projects/fnccheck/}
+@end display
+
+This should be included in @samp{LIBS} during the GMP configure so that test
+programs will link.  For example,
+
+@example
+./configure --enable-profiling=instrument LIBS=-lfc
+@end example
+
+On a GNU system the C library provides dummy instrumenting functions, so
+programs compiled with this option will link.  In this case it's only
+necessary to ensure the correct library is added when linking an application.
+
+The x86 assembly code supports this option, but on other processors the
+assembly routines will be as if compiled without
+@samp{-finstrument-functions} meaning time spent in them will effectively be
+attributed to their caller.
+@end table
+
+
+@node Autoconf, Emacs, Profiling, GMP Basics
+@section Autoconf
+@cindex Autoconf
+
+Autoconf based applications can easily check whether GMP is installed.  The
+only thing to be noted is that GMP library symbols from version 3 onwards have
+prefixes like @code{__gmpz}.  The following therefore would be a simple test,
+
+@cindex @code{AC_CHECK_LIB}
+@example
+AC_CHECK_LIB(gmp, __gmpz_init)
+@end example
+
+This just uses the default @code{AC_CHECK_LIB} actions for found or not found,
+but an application that must have GMP would want to generate an error if not
+found.  For example,
+
+@example
+AC_CHECK_LIB(gmp, __gmpz_init, ,
+  [AC_MSG_ERROR([GNU MP not found, see https://gmplib.org/])])
+@end example
+
+If functions added in some particular version of GMP are required, then one of
+those can be used when checking.  For example @code{mpz_mul_si} was added in
+GMP 3.1,
+
+@example
+AC_CHECK_LIB(gmp, __gmpz_mul_si, ,
+  [AC_MSG_ERROR(
+  [GNU MP not found, or not 3.1 or up, see https://gmplib.org/])])
+@end example
+
+An alternative would be to test the version number in @file{gmp.h} using say
+@code{AC_EGREP_CPP}.  That would make it possible to test the exact version,
+if some particular sub-minor release is known to be necessary.
+
+In general it's recommended that applications should simply demand a new
+enough GMP rather than trying to provide supplements for features not
+available in past versions.
+
+Occasionally an application will need or want to know the size of a type at
+configuration or preprocessing time, not just with @code{sizeof} in the code.
+This can be done in the normal way with @code{mp_limb_t} etc, but GMP 4.0 or
+up is best for this, since prior versions needed certain @samp{-D} defines on
+systems using a @code{long long} limb.  The following would suit Autoconf 2.50
+or up,
+
+@example
+AC_CHECK_SIZEOF(mp_limb_t, , [#include <gmp.h>])
+@end example
+
+
+@node Emacs,  , Autoconf, GMP Basics
+@section Emacs
+@cindex Emacs
+@cindex @code{info-lookup-symbol}
+
+@key{C-h C-i} (@code{info-lookup-symbol}) is a good way to find documentation
+on C functions while editing (@pxref{Info Lookup, , Info Documentation Lookup,
+emacs, The Emacs Editor}).
+
+The GMP manual can be included in such lookups by putting the following in
+your @file{.emacs},
+
+@c  This isn't pretty, but there doesn't seem to be a better way (in emacs
+@c  21.2 at least).  info-lookup->mode-value could be used for the "assoc"s,
+@c  but that function isn't documented, whereas info-lookup-alist is.
+@c
+@example
+(eval-after-load "info-look"
+  '(let ((mode-value (assoc 'c-mode (assoc 'symbol info-lookup-alist))))
+     (setcar (nthcdr 3 mode-value)
+             (cons '("(gmp)Function Index" nil "^ -.* " "\\>")
+                   (nth 3 mode-value)))))
+@end example
+
+
+@node Reporting Bugs, Integer Functions, GMP Basics, Top
+@comment  node-name,  next,  previous,  up
+@chapter Reporting Bugs
+@cindex Reporting bugs
+@cindex Bug reporting
+
+If you think you have found a bug in the GMP library, please investigate it
+and report it.  We have made this library available to you, and it is not too
+much to ask you to report the bugs you find.
+
+Before you report a bug, check it's not already addressed in @ref{Known Build
+Problems}, or perhaps @ref{Notes for Particular Systems}.  You may also want
+to check @uref{https://gmplib.org/} for patches for this release.
+
+Please include the following in any report,
+
+@itemize @bullet
+@item
+The GMP version number, and if pre-packaged or patched then say so.
+
+@item
+A test program that makes it possible for us to reproduce the bug.  Include
+instructions on how to run the program.
+
+@item
+A description of what is wrong.  If the results are incorrect, in what way.
+If you get a crash, say so.
+
+@item
+If you get a crash, include a stack backtrace from the debugger if it's
+informative (@samp{where} in @command{gdb}, or @samp{$C} in @command{adb}).
+
+@item
+Please do not send core dumps, executables or @command{strace}s.
+
+@item
+The @samp{configure} options you used when building GMP, if any.
+
+@item
+The output from @samp{configure}, as printed to stdout, with any options used.
+
+@item
+The name of the compiler and its version.  For @command{gcc}, get the version
+with @samp{gcc -v}, otherwise perhaps @samp{what `which cc`}, or similar.
+
+@item
+The output from running @samp{uname -a}.
+
+@item
+The output from running @samp{./config.guess}, and from running
+@samp{./configfsf.guess} (might be the same).
+
+@item
+If the bug is related to @samp{configure}, then the compressed contents of
+@file{config.log}.
+
+@item
+If the bug is related to an @file{asm} file not assembling, then the contents
+of @file{config.m4} and the offending line or lines from the temporary
+@file{mpn/tmp-<file>.s}.
+@end itemize
+
+Please make an effort to produce a self-contained report, with something
+definite that can be tested or debugged.  Vague queries or piecemeal messages
+are difficult to act on and don't help the development effort.
+
+It is not uncommon that an observed problem is actually due to a bug in the
+compiler; the GMP code tends to explore interesting corners in compilers.
+
+If your bug report is good, we will do our best to help you get a corrected
+version of the library; if the bug report is poor, we won't do anything about
+it (except maybe ask you to send a better report).
+
+Send your report to: @email{gmp-bugs@@gmplib.org}.
+
+If you think something in this manual is unclear, or downright incorrect, or if
+the language needs to be improved, please send a note to the same address.
+
+
+@node Integer Functions, Rational Number Functions, Reporting Bugs, Top
+@comment  node-name,  next,  previous,  up
+@chapter Integer Functions
+@cindex Integer functions
+
+This chapter describes the GMP functions for performing integer arithmetic.
+These functions start with the prefix @code{mpz_}.
+
+GMP integers are stored in objects of type @code{mpz_t}.
+
+@menu
+* Initializing Integers::
+* Assigning Integers::
+* Simultaneous Integer Init & Assign::
+* Converting Integers::
+* Integer Arithmetic::
+* Integer Division::
+* Integer Exponentiation::
+* Integer Roots::
+* Number Theoretic Functions::
+* Integer Comparisons::
+* Integer Logic and Bit Fiddling::
+* I/O of Integers::
+* Integer Random Numbers::
+* Integer Import and Export::
+* Miscellaneous Integer Functions::
+* Integer Special Functions::
+@end menu
+
+@node Initializing Integers, Assigning Integers, Integer Functions, Integer Functions
+@comment  node-name,  next,  previous,  up
+@section Initialization Functions
+@cindex Integer initialization functions
+@cindex Initialization functions
+
+The functions for integer arithmetic assume that all integer objects are
+initialized.  You do that by calling the function @code{mpz_init}.  For
+example,
+
+@example
+@{
+  mpz_t integ;
+  mpz_init (integ);
+  @dots{}
+  mpz_add (integ, @dots{});
+  @dots{}
+  mpz_sub (integ, @dots{});
+
+  /* Unless the program is about to exit, do ... */
+  mpz_clear (integ);
+@}
+@end example
+
+As you can see, you can store new values any number of times, once an
+object is initialized.
+
+@deftypefun void mpz_init (mpz_t @var{x})
+Initialize @var{x}, and set its value to 0.
+@end deftypefun
+
+@deftypefun void mpz_inits (mpz_t @var{x}, ...)
+Initialize a NULL-terminated list of @code{mpz_t} variables, and set their
+values to 0.
+@end deftypefun
+
+@deftypefun void mpz_init2 (mpz_t @var{x}, mp_bitcnt_t @var{n})
+Initialize @var{x}, with space for @var{n}-bit numbers, and set its value to 0.
+Calling this function instead of @code{mpz_init} or @code{mpz_inits} is never
+necessary; reallocation is handled automatically by GMP when needed.
+
+While @var{n} defines the initial space, @var{x} will grow automatically in the
+normal way, if necessary, for subsequent values stored.  @code{mpz_init2} makes
+it possible to avoid such reallocations if a maximum size is known in advance.
+
+In preparation for an operation, GMP often allocates one limb more than
+ultimately needed.  To make sure GMP will not perform reallocation for
+@var{x}, you need to add the number of bits in @code{mp_limb_t} to @var{n}.
+@end deftypefun
+
+@deftypefun void mpz_clear (mpz_t @var{x})
+Free the space occupied by @var{x}.  Call this function for all @code{mpz_t}
+variables when you are done with them.
+@end deftypefun
+
+@deftypefun void mpz_clears (mpz_t @var{x}, ...)
+Free the space occupied by a NULL-terminated list of @code{mpz_t} variables.
+@end deftypefun
+
+@deftypefun void mpz_realloc2 (mpz_t @var{x}, mp_bitcnt_t @var{n})
+Change the space allocated for @var{x} to @var{n} bits.  The value in @var{x}
+is preserved if it fits, or is set to 0 if not.
+
+Calling this function is never necessary; reallocation is handled automatically
+by GMP when needed.  But this function can be used to increase the space for a
+variable in order to avoid repeated automatic reallocations, or to decrease it
+to give memory back to the heap.
+@end deftypefun
+
+
+@node Assigning Integers, Simultaneous Integer Init & Assign, Initializing Integers, Integer Functions
+@comment  node-name,  next,  previous,  up
+@section Assignment Functions
+@cindex Integer assignment functions
+@cindex Assignment functions
+
+These functions assign new values to already initialized integers
+(@pxref{Initializing Integers}).
+
+@deftypefun void mpz_set (mpz_t @var{rop}, const mpz_t @var{op})
+@deftypefunx void mpz_set_ui (mpz_t @var{rop}, unsigned long int @var{op})
+@deftypefunx void mpz_set_si (mpz_t @var{rop}, signed long int @var{op})
+@deftypefunx void mpz_set_d (mpz_t @var{rop}, double @var{op})
+@deftypefunx void mpz_set_q (mpz_t @var{rop}, const mpq_t @var{op})
+@deftypefunx void mpz_set_f (mpz_t @var{rop}, const mpf_t @var{op})
+Set the value of @var{rop} from @var{op}.
+
+@code{mpz_set_d}, @code{mpz_set_q} and @code{mpz_set_f} truncate @var{op} to
+make it an integer.
+@end deftypefun
+
+@deftypefun int mpz_set_str (mpz_t @var{rop}, const char *@var{str}, int @var{base})
+Set the value of @var{rop} from @var{str}, a null-terminated C string in base
+@var{base}.  White space is allowed in the string, and is simply ignored.
+
+The @var{base} may vary from 2 to 62, or if @var{base} is 0, then the leading
+characters are used: @code{0x} and @code{0X} for hexadecimal, @code{0b} and
+@code{0B} for binary, @code{0} for octal, or decimal otherwise.
+
+For bases up to 36, case is ignored; upper-case and lower-case letters have
+the same value.  For bases 37 to 62, upper-case letter represent the usual
+10..35 while lower-case letter represent 36..61.
+
+This function returns 0 if the entire string is a valid number in base
+@var{base}.  Otherwise it returns @minus{}1.
+@c
+@c  It turns out that it is not entirely true that this function ignores
+@c  white-space.  It does ignore it between digits, but not after a minus sign
+@c  or within or after ``0x''.  Some thought was given to disallowing all
+@c  whitespace, but that would be an incompatible change, whitespace has been
+@c  documented as ignored ever since GMP 1.
+@c
+@end deftypefun
+
+@deftypefun void mpz_swap (mpz_t @var{rop1}, mpz_t @var{rop2})
+Swap the values @var{rop1} and @var{rop2} efficiently.
+@end deftypefun
+
+
+@node Simultaneous Integer Init & Assign, Converting Integers, Assigning Integers, Integer Functions
+@comment  node-name,  next,  previous,  up
+@section Combined Initialization and Assignment Functions
+@cindex Integer assignment functions
+@cindex Assignment functions
+@cindex Integer initialization functions
+@cindex Initialization functions
+
+For convenience, GMP provides a parallel series of initialize-and-set functions
+which initialize the output and then store the value there.  These functions'
+names have the form @code{mpz_init_set@dots{}}
+
+Here is an example of using one:
+
+@example
+@{
+  mpz_t pie;
+  mpz_init_set_str (pie, "3141592653589793238462643383279502884", 10);
+  @dots{}
+  mpz_sub (pie, @dots{});
+  @dots{}
+  mpz_clear (pie);
+@}
+@end example
+
+@noindent
+Once the integer has been initialized by any of the @code{mpz_init_set@dots{}}
+functions, it can be used as the source or destination operand for the ordinary
+integer functions.  Don't use an initialize-and-set function on a variable
+already initialized!
+
+@deftypefun void mpz_init_set (mpz_t @var{rop}, const mpz_t @var{op})
+@deftypefunx void mpz_init_set_ui (mpz_t @var{rop}, unsigned long int @var{op})
+@deftypefunx void mpz_init_set_si (mpz_t @var{rop}, signed long int @var{op})
+@deftypefunx void mpz_init_set_d (mpz_t @var{rop}, double @var{op})
+Initialize @var{rop} with limb space and set the initial numeric value from
+@var{op}.
+@end deftypefun
+
+@deftypefun int mpz_init_set_str (mpz_t @var{rop}, const char *@var{str}, int @var{base})
+Initialize @var{rop} and set its value like @code{mpz_set_str} (see its
+documentation above for details).
+
+If the string is a correct base @var{base} number, the function returns 0;
+if an error occurs it returns @minus{}1.  @var{rop} is initialized even if
+an error occurs.  (I.e., you have to call @code{mpz_clear} for it.)
+@end deftypefun
+
+
+@node Converting Integers, Integer Arithmetic, Simultaneous Integer Init & Assign, Integer Functions
+@comment  node-name,  next,  previous,  up
+@section Conversion Functions
+@cindex Integer conversion functions
+@cindex Conversion functions
+
+This section describes functions for converting GMP integers to standard C
+types.  Functions for converting @emph{to} GMP integers are described in
+@ref{Assigning Integers} and @ref{I/O of Integers}.
+
+@deftypefun {unsigned long int} mpz_get_ui (const mpz_t @var{op})
+Return the value of @var{op} as an @code{unsigned long}.
+
+If @var{op} is too big to fit an @code{unsigned long} then just the least
+significant bits that do fit are returned.  The sign of @var{op} is ignored,
+only the absolute value is used.
+@end deftypefun
+
+@deftypefun {signed long int} mpz_get_si (const mpz_t @var{op})
+If @var{op} fits into a @code{signed long int} return the value of @var{op}.
+Otherwise return the least significant part of @var{op}, with the same sign
+as @var{op}.
+
+If @var{op} is too big to fit in a @code{signed long int}, the returned
+result is probably not very useful.  To find out if the value will fit, use
+the function @code{mpz_fits_slong_p}.
+@end deftypefun
+
+@deftypefun double mpz_get_d (const mpz_t @var{op})
+Convert @var{op} to a @code{double}, truncating if necessary (i.e.@: rounding
+towards zero).
+
+If the exponent from the conversion is too big, the result is system
+dependent.  An infinity is returned where available.  A hardware overflow trap
+may or may not occur.
+@end deftypefun
+
+@deftypefun double mpz_get_d_2exp (signed long int *@var{exp}, const mpz_t @var{op})
+Convert @var{op} to a @code{double}, truncating if necessary (i.e.@: rounding
+towards zero), and returning the exponent separately.
+
+The return value is in the range @math{0.5@le{}@GMPabs{@var{d}}<1} and the
+exponent is stored to @code{*@var{exp}}.  @m{@var{d} * 2^{exp}, @var{d} *
+2^@var{exp}} is the (truncated) @var{op} value.  If @var{op} is zero, the
+return is @math{0.0} and 0 is stored to @code{*@var{exp}}.
+
+@cindex @code{frexp}
+This is similar to the standard C @code{frexp} function (@pxref{Normalization
+Functions,,, libc, The GNU C Library Reference Manual}).
+@end deftypefun
+
+@deftypefun {char *} mpz_get_str (char *@var{str}, int @var{base}, const mpz_t @var{op})
+Convert @var{op} to a string of digits in base @var{base}.  The base argument
+may vary from 2 to 62 or from @minus{}2 to @minus{}36.
+
+For @var{base} in the range 2..36, digits and lower-case letters are used; for
+@minus{}2..@minus{}36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+
+If @var{str} is @code{NULL}, the result string is allocated using the current
+allocation function (@pxref{Custom Allocation}).  The block will be
+@code{strlen(str)+1} bytes, that being exactly enough for the string and
+null-terminator.
+
+If @var{str} is not @code{NULL}, it should point to a block of storage large
+enough for the result, that being @code{mpz_sizeinbase (@var{op}, @var{base})
++ 2}.  The two extra bytes are for a possible minus sign, and the
+null-terminator.
+
+A pointer to the result string is returned, being either the allocated block,
+or the given @var{str}.
+@end deftypefun
+
+
+@need 2000
+@node Integer Arithmetic, Integer Division, Converting Integers, Integer Functions
+@comment  node-name,  next,  previous,  up
+@section Arithmetic Functions
+@cindex Integer arithmetic functions
+@cindex Arithmetic functions
+
+@deftypefun void mpz_add (mpz_t @var{rop}, const mpz_t @var{op1}, const mpz_t @var{op2})
+@deftypefunx void mpz_add_ui (mpz_t @var{rop}, const mpz_t @var{op1}, unsigned long int @var{op2})
+Set @var{rop} to @math{@var{op1} + @var{op2}}.
+@end deftypefun
+
+@deftypefun void mpz_sub (mpz_t @var{rop}, const mpz_t @var{op1}, const mpz_t @var{op2})
+@deftypefunx void mpz_sub_ui (mpz_t @var{rop}, const mpz_t @var{op1}, unsigned long int @var{op2})
+@deftypefunx void mpz_ui_sub (mpz_t @var{rop}, unsigned long int @var{op1}, const mpz_t @var{op2})
+Set @var{rop} to @var{op1} @minus{} @var{op2}.
+@end deftypefun
+
+@deftypefun void mpz_mul (mpz_t @var{rop}, const mpz_t @var{op1}, const mpz_t @var{op2})
+@deftypefunx void mpz_mul_si (mpz_t @var{rop}, const mpz_t @var{op1}, long int @var{op2})
+@deftypefunx void mpz_mul_ui (mpz_t @var{rop}, const mpz_t @var{op1}, unsigned long int @var{op2})
+Set @var{rop} to @math{@var{op1} @GMPtimes{} @var{op2}}.
+@end deftypefun
+
+@deftypefun void mpz_addmul (mpz_t @var{rop}, const mpz_t @var{op1}, const mpz_t @var{op2})
+@deftypefunx void mpz_addmul_ui (mpz_t @var{rop}, const mpz_t @var{op1}, unsigned long int @var{op2})
+Set @var{rop} to @math{@var{rop} + @var{op1} @GMPtimes{} @var{op2}}.
+@end deftypefun
+
+@deftypefun void mpz_submul (mpz_t @var{rop}, const mpz_t @var{op1}, const mpz_t @var{op2})
+@deftypefunx void mpz_submul_ui (mpz_t @var{rop}, const mpz_t @var{op1}, unsigned long int @var{op2})
+Set @var{rop} to @math{@var{rop} - @var{op1} @GMPtimes{} @var{op2}}.
+@end deftypefun
+
+@deftypefun void mpz_mul_2exp (mpz_t @var{rop}, const mpz_t @var{op1}, mp_bitcnt_t @var{op2})
+@cindex Bit shift left
+Set @var{rop} to @m{@var{op1} \times 2^{op2}, @var{op1} times 2 raised to
+@var{op2}}.  This operation can also be defined as a left shift by @var{op2}
+bits.
+@end deftypefun
+
+@deftypefun void mpz_neg (mpz_t @var{rop}, const mpz_t @var{op})
+Set @var{rop} to @minus{}@var{op}.
+@end deftypefun
+
+@deftypefun void mpz_abs (mpz_t @var{rop}, const mpz_t @var{op})
+Set @var{rop} to the absolute value of @var{op}.
+@end deftypefun
+
+
+@need 2000
+@node Integer Division, Integer Exponentiation, Integer Arithmetic, Integer Functions
+@section Division Functions
+@cindex Integer division functions
+@cindex Division functions
+
+Division is undefined if the divisor is zero.  Passing a zero divisor to the
+division or modulo functions (including the modular powering functions
+@code{mpz_powm} and @code{mpz_powm_ui}), will cause an intentional division by
+zero.  This lets a program handle arithmetic exceptions in these functions the
+same way as for normal C @code{int} arithmetic.
+
+@c  Separate deftypefun groups for cdiv, fdiv and tdiv produce a blank line
+@c  between each, and seem to let tex do a better job of page breaks than an
+@c  @sp 1 in the middle of one big set.
+
+@deftypefun void mpz_cdiv_q (mpz_t @var{q}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx void mpz_cdiv_r (mpz_t @var{r}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx void mpz_cdiv_qr (mpz_t @var{q}, mpz_t @var{r}, const mpz_t @var{n}, const mpz_t @var{d})
+@maybepagebreak
+@deftypefunx {unsigned long int} mpz_cdiv_q_ui (mpz_t @var{q}, const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_cdiv_r_ui (mpz_t @var{r}, const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_cdiv_qr_ui (mpz_t @var{q}, mpz_t @var{r}, @w{const mpz_t @var{n}}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_cdiv_ui (const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@maybepagebreak
+@deftypefunx void mpz_cdiv_q_2exp (mpz_t @var{q}, const mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@deftypefunx void mpz_cdiv_r_2exp (mpz_t @var{r}, const mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@end deftypefun
+
+@deftypefun void mpz_fdiv_q (mpz_t @var{q}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx void mpz_fdiv_r (mpz_t @var{r}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx void mpz_fdiv_qr (mpz_t @var{q}, mpz_t @var{r}, const mpz_t @var{n}, const mpz_t @var{d})
+@maybepagebreak
+@deftypefunx {unsigned long int} mpz_fdiv_q_ui (mpz_t @var{q}, const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_fdiv_r_ui (mpz_t @var{r}, const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_fdiv_qr_ui (mpz_t @var{q}, mpz_t @var{r}, @w{const mpz_t @var{n}}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_fdiv_ui (const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@maybepagebreak
+@deftypefunx void mpz_fdiv_q_2exp (mpz_t @var{q}, const mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@deftypefunx void mpz_fdiv_r_2exp (mpz_t @var{r}, const mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@end deftypefun
+
+@deftypefun void mpz_tdiv_q (mpz_t @var{q}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx void mpz_tdiv_r (mpz_t @var{r}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx void mpz_tdiv_qr (mpz_t @var{q}, mpz_t @var{r}, const mpz_t @var{n}, const mpz_t @var{d})
+@maybepagebreak
+@deftypefunx {unsigned long int} mpz_tdiv_q_ui (mpz_t @var{q}, const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_tdiv_r_ui (mpz_t @var{r}, const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_tdiv_qr_ui (mpz_t @var{q}, mpz_t @var{r}, @w{const mpz_t @var{n}}, @w{unsigned long int @var{d}})
+@deftypefunx {unsigned long int} mpz_tdiv_ui (const mpz_t @var{n}, @w{unsigned long int @var{d}})
+@maybepagebreak
+@deftypefunx void mpz_tdiv_q_2exp (mpz_t @var{q}, const mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@deftypefunx void mpz_tdiv_r_2exp (mpz_t @var{r}, const mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@cindex Bit shift right
+
+@sp 1
+Divide @var{n} by @var{d}, forming a quotient @var{q} and/or remainder
+@var{r}.  For the @code{2exp} functions, @m{@var{d}=2^b, @var{d}=2^@var{b}}.
+The rounding is in three styles, each suiting different applications.
+
+@itemize @bullet
+@item
+@code{cdiv} rounds @var{q} up towards @m{+\infty, +infinity}, and @var{r} will
+have the opposite sign to @var{d}.  The @code{c} stands for ``ceil''.
+
+@item
+@code{fdiv} rounds @var{q} down towards @m{-\infty, @minus{}infinity}, and
+@var{r} will have the same sign as @var{d}.  The @code{f} stands for
+``floor''.
+
+@item
+@code{tdiv} rounds @var{q} towards zero, and @var{r} will have the same sign
+as @var{n}.  The @code{t} stands for ``truncate''.
+@end itemize
+
+In all cases @var{q} and @var{r} will satisfy
+@m{@var{n}=@var{q}@var{d}+@var{r}, @var{n}=@var{q}*@var{d}+@var{r}}, and
+@var{r} will satisfy @math{0@le{}@GMPabs{@var{r}}<@GMPabs{@var{d}}}.
+
+The @code{q} functions calculate only the quotient, the @code{r} functions
+only the remainder, and the @code{qr} functions calculate both.  Note that for
+@code{qr} the same variable cannot be passed for both @var{q} and @var{r}, or
+results will be unpredictable.
+
+For the @code{ui} variants the return value is the remainder, and in fact
+returning the remainder is all the @code{div_ui} functions do.  For
+@code{tdiv} and @code{cdiv} the remainder can be negative, so for those the
+return value is the absolute value of the remainder.
+
+For the @code{2exp} variants the divisor is @m{2^b,2^@var{b}}.  These
+functions are implemented as right shifts and bit masks, but of course they
+round the same as the other functions.
+
+For positive @var{n} both @code{mpz_fdiv_q_2exp} and @code{mpz_tdiv_q_2exp}
+are simple bitwise right shifts.  For negative @var{n}, @code{mpz_fdiv_q_2exp}
+is effectively an arithmetic right shift treating @var{n} as twos complement
+the same as the bitwise logical functions do, whereas @code{mpz_tdiv_q_2exp}
+effectively treats @var{n} as sign and magnitude.
+@end deftypefun
+
+@deftypefun void mpz_mod (mpz_t @var{r}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx {unsigned long int} mpz_mod_ui (mpz_t @var{r}, const mpz_t @var{n}, @w{unsigned long int @var{d}})
+Set @var{r} to @var{n} @code{mod} @var{d}.  The sign of the divisor is
+ignored; the result is always non-negative.
+
+@code{mpz_mod_ui} is identical to @code{mpz_fdiv_r_ui} above, returning the
+remainder as well as setting @var{r}.  See @code{mpz_fdiv_ui} above if only
+the return value is wanted.
+@end deftypefun
+
+@deftypefun void mpz_divexact (mpz_t @var{q}, const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx void mpz_divexact_ui (mpz_t @var{q}, const mpz_t @var{n}, unsigned long @var{d})
+@cindex Exact division functions
+Set @var{q} to @var{n}/@var{d}.  These functions produce correct results only
+when it is known in advance that @var{d} divides @var{n}.
+
+These routines are much faster than the other division functions, and are the
+best choice when exact division is known to occur, for example reducing a
+rational to lowest terms.
+@end deftypefun
+
+@deftypefun int mpz_divisible_p (const mpz_t @var{n}, const mpz_t @var{d})
+@deftypefunx int mpz_divisible_ui_p (const mpz_t @var{n}, unsigned long int @var{d})
+@deftypefunx int mpz_divisible_2exp_p (const mpz_t @var{n}, mp_bitcnt_t @var{b})
+@cindex Divisibility functions
+Return non-zero if @var{n} is exactly divisible by @var{d}, or in the case of
+@code{mpz_divisible_2exp_p} by @m{2^b,2^@var{b}}.
+
+@var{n} is divisible by @var{d} if there exists an integer @var{q} satisfying
+@math{@var{n} = @var{q}@GMPmultiply{}@var{d}}.  Unlike the other division
+functions, @math{@var{d}=0} is accepted and following the rule it can be seen
+that only 0 is considered divisible by 0.
+@end deftypefun
+
+@deftypefun int mpz_congruent_p (const mpz_t @var{n}, const mpz_t @var{c}, const mpz_t @var{d})
+@deftypefunx int mpz_congruent_ui_p (const mpz_t @var{n}, unsigned long int @var{c}, unsigned long int @var{d})
+@deftypefunx int mpz_congruent_2exp_p (const mpz_t @var{n}, const mpz_t @var{c}, mp_bitcnt_t @var{b})
+@cindex Divisibility functions
+@cindex Congruence functions
+Return non-zero if @var{n} is congruent to @var{c} modulo @var{d}, or in the
+case of @code{mpz_congruent_2exp_p} modulo @m{2^b,2^@var{b}}.
+
+@var{n} is congruent to @var{c} mod @var{d} if there exists an integer @var{q}
+satisfying @math{@var{n} = @var{c} + @var{q}@GMPmultiply{}@var{d}}.  Unlike
+the other division functions, @math{@var{d}=0} is accepted and following the
+rule it can be seen that @var{n} and @var{c} are considered congruent mod 0
+only when exactly equal.
+@end deftypefun
+
+
+@need 2000
+@node Integer Exponentiation, Integer Roots, Integer Division, Integer Functions
+@section Exponentiation Functions
+@cindex Integer exponentiation functions
+@cindex Exponentiation functions
+@cindex Powering functions
+
+@deftypefun void mpz_powm (mpz_t @var{rop}, const mpz_t @var{base}, const mpz_t @var{exp}, const mpz_t @var{mod})
+@deftypefunx void mpz_powm_ui (mpz_t @var{rop}, const mpz_t @var{base}, unsigned long int @var{exp}, const mpz_t @var{mod})
+Set @var{rop} to @m{base^{exp} \bmod mod, (@var{base} raised to @var{exp})
+modulo @var{mod}}.
+
+Negative @var{exp} is supported if an inverse @math{@var{base}^@W{-1} @bmod
+@var{mod}} exists (see @code{mpz_invert} in @ref{Number Theoretic Functions}).
+If an inverse doesn't exist then a divide by zero is raised.
+@end deftypefun
+
+@deftypefun void mpz_powm_sec (mpz_t @var{rop}, const mpz_t @var{base}, const mpz_t @var{exp}, const mpz_t @var{mod})
+Set @var{rop} to @m{base^{exp} \bmod @var{mod}, (@var{base} raised to @var{exp})
+modulo @var{mod}}.
+
+It is required that @math{@var{exp} > 0} and that @var{mod} is odd.
+
+This function is designed to take the same time and have the same cache access
+patterns for any two same-size arguments, assuming that function arguments are
+placed at the same position and that the machine state is identical upon
+function entry.  This function is intended for cryptographic purposes, where
+resilience to side-channel attacks is desired.
+@end deftypefun
+
+@deftypefun void mpz_pow_ui (mpz_t @var{rop}, const mpz_t @var{base}, unsigned long int @var{exp})
+@deftypefunx void mpz_ui_pow_ui (mpz_t @var{rop}, unsigned long int @var{base}, unsigned long int @var{exp})
+Set @var{rop} to @m{base^{exp}, @var{base} raised to @var{exp}}.  The case
+@math{0^0} yields 1.
+@end deftypefun
+
+
+@need 2000
+@node Integer Roots, Number Theoretic Functions, Integer Exponentiation, Integer Functions
+@section Root Extraction Functions
+@cindex Integer root functions
+@cindex Root extraction functions
+
+@deftypefun int mpz_root (mpz_t @var{rop}, const mpz_t @var{op}, unsigned long int @var{n})
+Set @var{rop} to @m{\lfloor\root n \of {op}\rfloor@C{},} the truncated integer
+part of the @var{n}th root of @var{op}.  Return non-zero if the computation
+was exact, i.e., if @var{op} is @var{rop} to the @var{n}th power.
+@end deftypefun
+
+@deftypefun void mpz_rootrem (mpz_t @var{root}, mpz_t @var{rem}, const mpz_t @var{u}, unsigned long int @var{n})
+Set @var{root} to @m{\lfloor\root n \of {u}\rfloor@C{},} the truncated
+integer part of the @var{n}th root of @var{u}.  Set @var{rem} to the
+remainder, @m{(@var{u} - @var{root}^n),
+@var{u}@minus{}@var{root}**@var{n}}.
+@end deftypefun
+
+@deftypefun void mpz_sqrt (mpz_t @var{rop}, const mpz_t @var{op})
+Set @var{rop} to @m{\lfloor\sqrt{@var{op}}\rfloor@C{},} the truncated
+integer part of the square root of @var{op}.
+@end deftypefun
+
+@deftypefun void mpz_sqrtrem (mpz_t @var{rop1}, mpz_t @var{rop2}, const mpz_t @var{op})
+Set @var{rop1} to @m{\lfloor\sqrt{@var{op}}\rfloor, the truncated integer part
+of the square root of @var{op}}, like @code{mpz_sqrt}.  Set @var{rop2} to the
+remainder @m{(@var{op} - @var{rop1}^2),
+@var{op}@minus{}@var{rop1}*@var{rop1}}, which will be zero if @var{op} is a
+perfect square.
+
+If @var{rop1} and @var{rop2} are the same variable, the results are
+undefined.
+@end deftypefun
+
+@deftypefun int mpz_perfect_power_p (const mpz_t @var{op})
+@cindex Perfect power functions
+@cindex Root testing functions
+Return non-zero if @var{op} is a perfect power, i.e., if there exist integers
+@m{a,@var{a}} and @m{b,@var{b}}, with @m{b>1, @var{b}>1}, such that
+@m{@var{op}=a^b, @var{op} equals @var{a} raised to the power @var{b}}.
+
+Under this definition both 0 and 1 are considered to be perfect powers.
+Negative values of @var{op} are accepted, but of course can only be odd
+perfect powers.
+@end deftypefun
+
+@deftypefun int mpz_perfect_square_p (const mpz_t @var{op})
+@cindex Perfect square functions
+@cindex Root testing functions
+Return non-zero if @var{op} is a perfect square, i.e., if the square root of
+@var{op} is an integer.  Under this definition both 0 and 1 are considered to
+be perfect squares.
+@end deftypefun
+
+
+@need 2000
+@node Number Theoretic Functions, Integer Comparisons, Integer Roots, Integer Functions
+@section Number Theoretic Functions
+@cindex Number theoretic functions
+
+@defty
