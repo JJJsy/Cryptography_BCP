@@ -73,7 +73,8 @@ def integrate_model():
     y_pre=inte_model.predict(x_test)
     # print y_test
     # print y_pre
-    label_1.config(text = '准确率为: '+str(accuracy_score(y_pre,y_test)))
+    label_1.config(text = '准确率为: '+str(accuracy_score(y_pre,y_test))+'\n'+'模型以保存为inte_model.pickle')
+    save_model(inte_model,'inte_model.pickle')
         
     
 
